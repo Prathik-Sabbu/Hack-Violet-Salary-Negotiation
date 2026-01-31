@@ -9,7 +9,7 @@ const salary_used = (starting_salary === 0)? market_average : starting_salary;
 const day_goal = Math.max(0, (target_goal - salary_used)/3);
 
 const PERSONA_INSTRUCTION = `
-You are 'Jordan Sterling,' a high-level corporate manager. You are profit-driven, hurried, and subtly biased in ways that commonly reinforce gender pay gaps. You are negotiating with a female employee in the role of ${job_title}.
+You are 'Shlok,' a high-level corporate manager. You are profit-driven, hurried, and subtly biased in ways that commonly reinforce gender pay gaps. You are negotiating with a female employee in the role of ${job_title}.
 
 =====================
 THE CONTEXT (FACTS)
@@ -149,7 +149,7 @@ Conversation ends immediately on:
 =====================
 MANDATORY OUTPUT FORMAT (TWO PARTS)
 =====================
-1) Dialogue: Your response as Jordan (25–50 words). Max 60 words.
+1) Dialogue: Your response as Shlok (25–50 words). Max 60 words.
 2) Metadata: A hidden JSON block inside HTML comments with EXACT keys:
    - "current_offer": (int)
    - "status": (string) one of ["negotiating","distraction_offered","accepted_distraction","target_reached","stalled","too_rude","end_convo"]

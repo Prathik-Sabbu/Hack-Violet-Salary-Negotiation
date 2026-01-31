@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import salaryroutes from './routes/salary.js';
-import { initializeChat } from './services/Chat_service.js';
-import messageroute from './routes/chat_messege.js';
+import salaryroutes from './routes/salaryRoutes.js';
+import { initializeChat } from './services/chatService.js';
+import messageroute from './routes/chatRoutes.js';
 
 const app = express();
 const PORT = 3001;
