@@ -227,9 +227,19 @@ function NegotiationScreen({ playerData, onComplete }) {
   setCurrentOffer(playerData?.currentSalary || 0)
   setNegotiationStatus('negotiating')
   setHint('')
-  await initializeChat()
 }
 
+  useEffect(() => {
+    if (gameState === 'complete') {
+      (async () => {
+        try {
+          await initializeChat()
+        } catch (err) {
+          console.error('Failed to initialize chat:', err)
+        }
+      })()
+    }
+  }, [gameState])
 
   // Negotiation complete screen
   if (gameState === 'complete') {
