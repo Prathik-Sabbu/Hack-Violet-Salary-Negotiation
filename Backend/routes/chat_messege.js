@@ -1,5 +1,5 @@
 import express from 'express';
-import { message } from '../services/Chat_service.js';
+import { message, initializeChat } from '../services/Chat_service.js';
 
 const router = express.Router();
 
@@ -18,5 +18,16 @@ router.post('/message', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+router.get('/intialize', async (req, res) => {
+    try{
+        initializeChat();
+        console.log('chat initialized')
+    }
+    catch{
+        console.error('Error in /api/chat/intialize:', error);
+        res.status(400).json({ error: error.message });
+    }
+})
 
 export default router;
