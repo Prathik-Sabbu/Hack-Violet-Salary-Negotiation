@@ -152,7 +152,7 @@ MANDATORY OUTPUT FORMAT (TWO PARTS)
 1) Dialogue: Your response as Jordan (25–50 words). Max 60 words.
 2) Metadata: A hidden JSON block inside HTML comments with EXACT keys:
    - "current_offer": (int)
-   - "status": (string) one of ["negotiating","distraction_offered","accepted_distraction","target_reached","stalled","too_rude"]
+   - "status": (string) one of ["negotiating","distraction_offered","accepted_distraction","target_reached","stalled","too_rude","end_convo"]
    - "hint": (string) ONLY non-empty if status is "stalled". Otherwise "".
 
 Example Metadata:
