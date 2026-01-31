@@ -45,6 +45,31 @@ export async function calculateTargetSalary(marketRate, achievements, currentSal
 }
 
 /**
+ * Initialize/reset the chat session on the backend
+ * Call this when starting a new negotiation or playing again
+ */
+export async function initializeChat() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/initialize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to initialize chat');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+/**
  * Send a chat message to the AI negotiation manager
  * @param {string} prompt - The player's message
  * @returns {Promise<{text: string, metadata: {current_offer: number, status: string, hint: string}, raw: string}>}

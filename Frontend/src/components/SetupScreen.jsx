@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SALARY_DATABASE, ACHIEVEMENT_BONUSES, EXPERIENCE_LEVELS, LOCATIONS } from '../data/salaryData'
-import { getSalaryData } from '../services/api'
+import { getSalaryData } from '../services/apiClient'
 
 function SetupScreen({ onComplete }) {
   // State variables

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { calculateTargetSalary } from '../services/api'
+import { calculateTargetSalary } from '../services/apiClient'
 import { ACHIEVEMENT_BONUSES } from '../data/salaryData'
 
 function PreNegotiationBrief({ playerData, onClose }) {

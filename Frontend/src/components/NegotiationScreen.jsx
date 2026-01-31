@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import TextArea from './TextArea'
 import ShlokText from './ShlokText'
-import PreNegotiationBrief from './PreNegotiationBrief'
+import PreNegotiationBrief from './NegotiationBrief'
 import './NegotiationScreen.css'
 import StaminaBar from './StaminaBar'
-import { sendChatMessage } from '../services/api'
+import { sendChatMessage, initializeChat } from '../services/apiClient'
 
-function NegotiationScreen({ playerData, onComplete }) {
+function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
   const [gameState, setGameState] = useState('shlok_speaking')
   const [playerMessage, setPlayerMessage] = useState('')
@@ -29,53 +29,8 @@ function NegotiationScreen({ playerData, onComplete }) {
   // Terminal statuses that end the negotiation
   const TERMINAL_STATUSES = ['accepted_distraction', 'target_reached', 'too_rude', 'end_convo']
 
-  // ============================================================
-  // PLACEHOLDER RESPONSES - REPLACE WITH GEMINI API CALL
-  // ============================================================
-  // TODO: Replace this with actual Gemini API integration
-  // Example API call structure:
-  //
-  // async function getShlokResponse(playerMessage, conversationHistory, playerData) {
-  //   const response = await fetch('/api/negotiate', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({
-  //       playerMessage,
-  //       conversationHistory,
-  //       playerData,
-  //       round: currentRound,
-  //       maxRounds: MAX_ROUNDS
-  //     })
-  //   });
-  //   const data = await response.json();
-  //   return data.shlokResponse;
-  // }
-  // ============================================================
-
-  const PLACEHOLDER_SHLOK_RESPONSES = [
-    // Round 0 - Opening (used automatically)
-    `Ah, ${playerData?.jobTitle || 'there'}! Come in, come in. Have a seat. So, I've been looking over your file... You wanted to discuss your compensation. Why are you here?`,
-
-    // Round 1 - After player's first response
-    // TODO: Replace with Gemini API call - should respond to player's opening argument
-    `I see, I see. You make some interesting points. But you know, the budget is tight this quarter. We were thinking more along the lines of a 3% increase. What makes you think you deserve more than that?`,
-
-    // Round 2 - Middle negotiation
-    // TODO: Replace with Gemini API call - should challenge player's justification
-    `Hmm, those achievements are noted in your file. But everyone here works hard, you know? Tell me specifically - what value have you brought that goes above and beyond your job description?`,
-
-    // Round 3 - Pushback
-    // TODO: Replace with Gemini API call - should create tension/resistance
-    `*leans back in chair* Look, I appreciate your confidence. But I've got other team members to think about too. If I give you that much, everyone will want the same. How do you suggest I handle that?`,
-
-    // Round 4 - Softening
-    // TODO: Replace with Gemini API call - should show willingness to negotiate
-    `You know what, you've given me a lot to think about. I can see you've done your research. Let me be honest with you - I might be able to go a bit higher than I initially said. What's the absolute minimum you'd be happy with?`,
-
-    // Round 5 - Final decision
-    // TODO: Replace with Gemini API call - should give final offer based on player's performance
-    `Alright, I've made my decision. Based on everything you've told me and your contributions to the team, here's what I can offer you... *shuffles papers*`
-  ]
+  // Opening message for Shlok (round 0)
+  const OPENING_MESSAGE = `Ah, ${playerData?.jobTitle || 'there'}! [THIS IS PLACEHOLDER] Come in, come in. Have a seat. So, I've been looking over your file... You wanted to discuss your compensation. Why are you here?`
 
   // Get Shlok's response from the AI backend
   const getShlokResponse = async (playerInput) => {
@@ -107,10 +62,8 @@ function NegotiationScreen({ playerData, onComplete }) {
     } catch (error) {
       console.error('Error getting AI response:', error)
       setIsLoading(false)
-      // Fallback to placeholder if API fails
-      const nextRound = currentRound + 1
       return {
-        text: PLACEHOLDER_SHLOK_RESPONSES[Math.min(nextRound, MAX_ROUNDS)],
+        text: "I'm having trouble processing that. Let's continue - what were you saying?",
         metadata: null
       }
     }
@@ -122,14 +75,14 @@ function NegotiationScreen({ playerData, onComplete }) {
     if (showBrief) return
 
     if (gameState === 'shlok_speaking') {
-      if (currentRound === 0 && textIndex < PLACEHOLDER_SHLOK_RESPONSES[0].length) {
+      if (currentRound === 0 && textIndex < OPENING_MESSAGE.length) {
         // Opening dialogue
         const timer = setTimeout(() => {
-          setCurrentShlokText(prev => prev + PLACEHOLDER_SHLOK_RESPONSES[0][textIndex])
+          setCurrentShlokText(prev => prev + OPENING_MESSAGE[textIndex])
           setTextIndex(prev => prev + 1)
         }, 30)
         return () => clearTimeout(timer)
-      } else if (currentRound === 0 && textIndex >= PLACEHOLDER_SHLOK_RESPONSES[0].length) {
+      } else if (currentRound === 0 && textIndex >= OPENING_MESSAGE.length) {
         // Opening finished
         const timer = setTimeout(() => {
           setGameState('player_typing')
@@ -206,7 +159,7 @@ function NegotiationScreen({ playerData, onComplete }) {
       case 'too_rude':
         return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', color: 'text-red-600' }
       case 'end_convo':
-        return { title: 'Negotiation Ended', message: 'Jordan ended the conversation. Try providing more specific data next time.', color: 'text-orange-600' }
+        return { title: 'Negotiation Ended', message: 'Shlok ended the conversation. Try providing more specific data next time.', color: 'text-orange-600' }
       case 'stalled':
         return { title: 'Negotiation Stalled', message: 'You ran out of time without making progress.', color: 'text-yellow-600' }
       default:
@@ -274,12 +227,27 @@ function NegotiationScreen({ playerData, onComplete }) {
             </div>
           </div>
 
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
-          >
-            Play Again
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={async () => {
+                try {
+                  await initializeChat()
+                } catch (error) {
+                  console.error('Failed to reset chat:', error)
+                }
+                window.location.reload()
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
+            >
+              Play Again
+            </button>
+            <button
+              onClick={() => onNewSettings?.()}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg"
+            >
+              New Settings
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -351,7 +319,7 @@ function NegotiationScreen({ playerData, onComplete }) {
           {/* Loading indicator */}
           {isLoading && (
             <div className="bg-gray-100 border-4 border-gray-400 rounded-lg p-4 mb-4 text-center">
-              <span className="text-gray-600 animate-pulse">Jordan is thinking...</span>
+              <span className="text-gray-600 animate-pulse">Shlok is thinking...</span>
             </div>
           )}
 
