@@ -4,7 +4,7 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './PreNegotiationBrief'
 import './NegotiationScreen.css'
 import StaminaBar from './StaminaBar'
-import { sendChatMessage } from '../services/api'
+import { initializeChat, sendChatMessage } from '../services/api'
 
 function NegotiationScreen({ playerData, onComplete }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
@@ -214,6 +214,23 @@ function NegotiationScreen({ playerData, onComplete }) {
     }
   }
 
+  const handlePlayAgain = async () => {
+  // Reset game state
+  setGameState('shlok_speaking')
+  setPlayerMessage('')
+  setDialogue([])
+  setCurrentShlokText('')
+  setTextIndex(0)
+  setCurrentRound(0)
+  setIsLoading(false)
+  setShowBrief(true)
+  setCurrentOffer(playerData?.currentSalary || 0)
+  setNegotiationStatus('negotiating')
+  setHint('')
+  await initializeChat()
+}
+
+
   // Negotiation complete screen
   if (gameState === 'complete') {
     const outcome = getOutcomeMessage()
@@ -275,7 +292,7 @@ function NegotiationScreen({ playerData, onComplete }) {
           </div>
 
           <button
-            onClick={() => window.location.reload()}
+            onClick={handlePlayAgain}
             className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
           >
             Play Again

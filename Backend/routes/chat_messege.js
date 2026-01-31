@@ -23,6 +23,7 @@ router.get('/intialize', async (req, res) => {
     try{
         initializeChat();
         console.log('chat initialized')
+        res.status(200)
     }
     catch{
         console.error('Error in /api/chat/intialize:', error);
