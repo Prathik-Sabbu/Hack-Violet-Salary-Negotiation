@@ -14,6 +14,7 @@ router.post('/message', async (req, res) => {
         const response = await message(prompt);
         res.json({ response });
     } catch (error) {
+        console.error('Error in /api/chat/message:', error);
         res.status(500).json({ error: error.message });
     }
 });

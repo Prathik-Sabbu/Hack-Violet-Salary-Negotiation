@@ -35,6 +35,11 @@ app.listen(PORT, async () => {
   console.log(`   GET  http://localhost:${PORT}/api/salary?job=Software%20Engineer`);
   console.log(`   POST http://localhost:${PORT}/api/salary/calculate`);
   
-  // Initialize chat on server startup
-  await initializeChat();
+  // Initialize chat on server startup (don't let failures crash the server)
+  try {
+    await initializeChat();
+  } catch (err) {
+    console.error('Failed to initialize chat on startup:', err);
+    console.warn('The server is running but AI features may be unavailable.');
+  }
 });
