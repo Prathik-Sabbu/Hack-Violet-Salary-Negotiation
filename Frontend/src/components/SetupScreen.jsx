@@ -33,7 +33,7 @@ function SetupScreen({ onComplete }) {
     setError('')
     
     // Validation
-    if (!jobTitle || !experienceLevel || !location || !currentSalary) {
+    if (!jobTitle || !experienceLevel || !currentSalary) {
       setError('Please fill in all required fields')
       return
     }
@@ -52,7 +52,7 @@ function SetupScreen({ onComplete }) {
       onComplete({
         jobTitle,
         experienceLevel,
-        location,
+        location: location || null,
         currentSalary: parseFloat(currentSalary),
         achievements,
         marketRate: adjustedMarketRate,
@@ -128,13 +128,12 @@ function SetupScreen({ onComplete }) {
           {/* Location Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location (State) *
+              Location (State) (optional)
             </label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
               disabled={loading}
             >
               <option value="">Select your state...</option>
