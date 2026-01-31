@@ -1,0 +1,9 @@
+/* NegotiationScreen styles */
+
+.character {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  /* Debug: uncomment to see image bounds */
+  /* border: 2px solid red; */
+}

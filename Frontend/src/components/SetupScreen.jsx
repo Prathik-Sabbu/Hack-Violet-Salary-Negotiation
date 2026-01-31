@@ -33,7 +33,7 @@ function SetupScreen({ onComplete }) {
     setError('')
     
     // Validation
-    if (!jobTitle || !experienceLevel || !currentSalary) {
+    if (!jobTitle || !experienceLevel || !location || !currentSalary) {
       setError('Please fill in all required fields')
       return
     }
@@ -128,7 +128,7 @@ function SetupScreen({ onComplete }) {
           {/* Location Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location (State)
+              Location (State) *
             </label>
             <select
               value={location}

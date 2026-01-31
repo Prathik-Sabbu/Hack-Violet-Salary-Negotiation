@@ -1,3 +1,94 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Stardew Valley Font */
+@font-face {
+  font-family: 'Stardew Valley';
+  src: url('/font/stardewvalley.woff2') format('woff2'),
+       url('/font/stardewvalley.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Black background for letterboxing effect */
+html, body, #root {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - better for mobile */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: black;
+}
+
+/* Game container - fullscreen, no scroll */
+.game-container {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pixel art rendering - keeps pixels crisp */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Pixel-style border */
+.pixel-border {
+  box-shadow:
+    4px 0 0 0 currentColor,
+    -4px 0 0 0 currentColor,
+    0 4px 0 0 currentColor,
+    0 -4px 0 0 currentColor;
+}
+
+/* Walk-in animation */
+@keyframes walk-in {
+  0% {
+    transform: translateY(100vh) scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-walk-in {
+  animation: walk-in 2.5s ease-out forwards;
+}
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 0.8s infinite;
+}
+
+/* Radial gradient for light effect */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Sprite animation helper - for when you add real sprites */
+@keyframes sprite-walk {
+  0% { background-position: 0 0; }
+  25% { background-position: -32px 0; }
+  50% { background-position: -64px 0; }
+  75% { background-position: -96px 0; }
+  100% { background-position: 0 0; }
+}
+
+.sprite-animate {
+  animation: sprite-walk 0.5s steps(1) infinite;
+}
