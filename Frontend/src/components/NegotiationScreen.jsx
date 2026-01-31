@@ -4,6 +4,7 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './PreNegotiationBrief'
 import './NegotiationScreen.css'
 import StaminaBar from './StaminaBar'
+import { sendChatMessage } from '../services/api'
 
 function NegotiationScreen({ playerData, onComplete }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
@@ -18,7 +19,15 @@ function NegotiationScreen({ playerData, onComplete }) {
   const images = ['shlok_idle.png', 'shlok_cinema.png', 'shlok_uninterested.png'];
   const [index, setIndex] = useState(0);
 
+  // AI response metadata
+  const [currentOffer, setCurrentOffer] = useState(playerData?.currentSalary || 0)
+  const [negotiationStatus, setNegotiationStatus] = useState('negotiating')
+  const [hint, setHint] = useState('')
+
   const MAX_ROUNDS = 5
+
+  // Terminal statuses that end the negotiation
+  const TERMINAL_STATUSES = ['accepted_distraction', 'target_reached', 'too_rude', 'end_convo']
 
   // ============================================================
   // PLACEHOLDER RESPONSES - REPLACE WITH GEMINI API CALL
@@ -45,7 +54,7 @@ function NegotiationScreen({ playerData, onComplete }) {
 
   const PLACEHOLDER_SHLOK_RESPONSES = [
     // Round 0 - Opening (used automatically)
-    `Ah, ${playerData?.jobTitle || 'there'}! Come in, come in. Have a seat. So, I've been looking over your file... You wanted to discuss your compensation, correct?`,
+    `Ah, ${playerData?.jobTitle || 'there'}! Come in, come in. Have a seat. So, I've been looking over your file... You wanted to discuss your compensation. Why are you here?`,
 
     // Round 1 - After player's first response
     // TODO: Replace with Gemini API call - should respond to player's opening argument
@@ -68,38 +77,43 @@ function NegotiationScreen({ playerData, onComplete }) {
     `Alright, I've made my decision. Based on everything you've told me and your contributions to the team, here's what I can offer you... *shuffles papers*`
   ]
 
-  // Get Shlok's response for current round
-  // TODO: Replace this function body with actual Gemini API call
+  // Get Shlok's response from the AI backend
   const getShlokResponse = async (playerInput) => {
     setIsLoading(true)
 
-    // ============================================================
-    // TODO: REPLACE THIS PLACEHOLDER WITH GEMINI API CALL
-    // ============================================================
-    // const response = await fetchGeminiResponse({
-    //   systemPrompt: `You are Shlok, a tough but fair manager in a salary negotiation...`,
-    //   playerMessage: playerInput,
-    //   conversationHistory: dialogue,
-    //   playerData: playerData,
-    //   round: currentRound,
-    //   maxRounds: MAX_ROUNDS
-    // });
-    // return response;
-    // ============================================================
+    try {
+      const response = await sendChatMessage(playerInput)
 
-    // Simulate API delay (playerInput will be sent to Gemini API)
-    console.log('Player input for Gemini:', playerInput)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+      // Update metadata state
+      if (response.metadata) {
+        if (response.metadata.current_offer !== undefined) {
+          setCurrentOffer(response.metadata.current_offer)
+        }
+        if (response.metadata.status) {
+          setNegotiationStatus(response.metadata.status)
+        }
+        if (response.metadata.hint) {
+          setHint(response.metadata.hint)
+        } else {
+          setHint('')
+        }
+      }
 
-    // Return placeholder response for current round
-    const nextRound = currentRound + 1
-    if (nextRound >= MAX_ROUNDS) {
       setIsLoading(false)
-      return PLACEHOLDER_SHLOK_RESPONSES[MAX_ROUNDS] // Final response
+      return {
+        text: response.text,
+        metadata: response.metadata
+      }
+    } catch (error) {
+      console.error('Error getting AI response:', error)
+      setIsLoading(false)
+      // Fallback to placeholder if API fails
+      const nextRound = currentRound + 1
+      return {
+        text: PLACEHOLDER_SHLOK_RESPONSES[Math.min(nextRound, MAX_ROUNDS)],
+        metadata: null
+      }
     }
-
-    setIsLoading(false)
-    return PLACEHOLDER_SHLOK_RESPONSES[nextRound]
   }
 
   // Typewriter effect for Shlok's dialogue
@@ -153,32 +167,61 @@ function NegotiationScreen({ playerData, onComplete }) {
     const playerInput = playerMessage
     setPlayerMessage('')
 
-    // Check if negotiation is complete
-    if (currentRound >= MAX_ROUNDS - 1) {
-      // TODO: Calculate final result and call onComplete
-      console.log('Negotiation complete!')
-      setGameState('complete')
-      onComplete?.({ dialogue, finalRound: currentRound })
-      return
-    }
-
-    // Get Shlok's response (placeholder or API)
+    // Get Shlok's response from AI
     const shlokResponse = await getShlokResponse(playerInput)
 
     // Add Shlok's response to dialogue
     setDialogue(prev => [
       ...prev,
-      { speaker: 'shlok', text: shlokResponse, round: currentRound + 1 }
+      { speaker: 'shlok', text: shlokResponse.text, round: currentRound + 1 }
     ])
+
+    // Check for terminal status or max rounds
+    const status = shlokResponse.metadata?.status
+    if (TERMINAL_STATUSES.includes(status) || currentRound >= MAX_ROUNDS - 1) {
+      console.log('Negotiation complete!', { status, currentOffer })
+      setGameState('complete')
+      onComplete?.({
+        dialogue,
+        finalRound: currentRound,
+        finalOffer: shlokResponse.metadata?.current_offer || currentOffer,
+        status: status || 'max_rounds'
+      })
+      return
+    }
 
     // Update state for next round
     setCurrentRound(prev => prev + 1)
-    setCurrentShlokText(shlokResponse)
+    setCurrentShlokText(shlokResponse.text)
     setGameState('shlok_speaking')
+  }
+
+  // Get outcome message based on status
+  const getOutcomeMessage = () => {
+    switch (negotiationStatus) {
+      case 'target_reached':
+        return { title: 'Congratulations!', message: 'You successfully negotiated to your target salary!', color: 'text-green-600' }
+      case 'accepted_distraction':
+        return { title: 'Deal Made', message: 'You accepted an alternative offer (title/PTO).', color: 'text-blue-600' }
+      case 'too_rude':
+        return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', color: 'text-red-600' }
+      case 'end_convo':
+        return { title: 'Negotiation Ended', message: 'Jordan ended the conversation. Try providing more specific data next time.', color: 'text-orange-600' }
+      case 'stalled':
+        return { title: 'Negotiation Stalled', message: 'You ran out of time without making progress.', color: 'text-yellow-600' }
+      default:
+        return { title: 'Negotiation Complete', message: `You completed ${currentRound + 1} rounds of negotiation.`, color: 'text-gray-600' }
+    }
   }
 
   // Negotiation complete screen
   if (gameState === 'complete') {
+    const outcome = getOutcomeMessage()
+    const salaryIncrease = currentOffer - (playerData?.currentSalary || 0)
+    const increasePercent = playerData?.currentSalary
+      ? ((salaryIncrease / playerData.currentSalary) * 100).toFixed(1)
+      : 0
+
     return (
       <div className="game-container relative flex items-center justify-center p-4">
         {/* Shlok background */}
@@ -191,16 +234,46 @@ function NegotiationScreen({ playerData, onComplete }) {
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="relative z-10 bg-white/95 rounded-xl shadow-2xl p-8 max-w-2xl w-full text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Negotiation Complete!
+          <h1 className={`text-3xl font-bold mb-2 ${outcome.color}`}>
+            {outcome.title}
           </h1>
           <p className="text-gray-600 mb-6">
-            You completed {MAX_ROUNDS} rounds of negotiation with Shlok.
+            {outcome.message}
           </p>
-          {/* TODO: Show final salary offer, score, feedback */}
-          <div className="bg-gray-100 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-500">Results coming soon...</p>
+
+          {/* Final offer display */}
+          <div className="bg-gray-100 rounded-lg p-6 mb-6">
+            <div className="grid grid-cols-2 gap-4 text-left">
+              <div>
+                <p className="text-sm text-gray-500">Starting Salary</p>
+                <p className="text-xl font-bold text-gray-800">
+                  ${(playerData?.currentSalary || 0).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Final Offer</p>
+                <p className="text-xl font-bold text-green-600">
+                  ${currentOffer.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Target Range</p>
+                <p className="text-lg font-medium text-gray-700">
+                  ${(playerData?.targetRange?.min || 0).toLocaleString()} - ${(playerData?.targetRange?.max || 0).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Increase</p>
+                <p className={`text-xl font-bold ${salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                  {salaryIncrease >= 0 ? '+' : ''}{increasePercent}%
+                  <span className="text-sm font-normal ml-1">
+                    (${salaryIncrease >= 0 ? '+' : ''}{salaryIncrease.toLocaleString()})
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
+
           <button
             onClick={() => window.location.reload()}
             className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
@@ -257,10 +330,28 @@ function NegotiationScreen({ playerData, onComplete }) {
             currentShlokText={currentShlokText}
           />
 
+          {/* Hint display when stalled */}
+          {hint && negotiationStatus === 'stalled' && (
+            <div className="bg-yellow-100 border-4 border-yellow-400 rounded-lg p-4 mb-4">
+              <p className="text-yellow-800 text-sm">
+                <span className="font-bold">💡 Hint:</span> {hint}
+              </p>
+            </div>
+          )}
+
+          {/* Current offer display */}
+          {currentOffer > 0 && (
+            <div className="bg-green-100 border-2 border-green-400 rounded-lg px-4 py-2 mb-4 inline-block">
+              <span className="text-green-800 text-sm font-medium">
+                Current Offer: ${currentOffer.toLocaleString()}
+              </span>
+            </div>
+          )}
+
           {/* Loading indicator */}
           {isLoading && (
             <div className="bg-gray-100 border-4 border-gray-400 rounded-lg p-4 mb-4 text-center">
-              <span className="text-gray-600 animate-pulse">Shlok is thinking...</span>
+              <span className="text-gray-600 animate-pulse">Jordan is thinking...</span>
             </div>
           )}
 

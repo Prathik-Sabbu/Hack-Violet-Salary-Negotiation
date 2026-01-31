@@ -31,13 +31,42 @@ export async function calculateTargetSalary(marketRate, achievements, currentSal
       },
       body: JSON.stringify({ marketRate, achievements, currentSalary }),
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to calculate target salary');
     }
-    
+
     const data = await response.json();
     return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send a chat message to the AI negotiation manager
+ * @param {string} prompt - The player's message
+ * @returns {Promise<{text: string, metadata: {current_offer: number, status: string, hint: string}, raw: string}>}
+ */
+export async function sendChatMessage(prompt) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt }),
+    });
+
+
+    if (!response.ok) {
+      throw new Error('Failed to send chat message');
+    }
+
+    const data = await response.json();
+    console.log(data);
+    return data.response; // { text, metadata, raw }
   } catch (error) {
     console.error('API Error:', error);
     throw error;
