@@ -159,7 +159,7 @@ function InstructionScreen({ onClose }) {
             <div className="mt-8 flex justify-center">
               <button
                 onClick={onClose}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-12 border-4 border-purple-800 shadow-lg transition-colors"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-12 border-8 border-purple-800 shadow-lg transition-colors"
                 style={{ fontFamily: 'Stardew Valley, monospace', imageRendering: 'pixelated' }}
               >
                 Got it, let's start!
