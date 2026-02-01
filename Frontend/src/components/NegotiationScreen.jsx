@@ -310,6 +310,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         <span className="text-sm font-medium">Brief</span>
       </button>
 
+      {/* Top-left button for new settings */}
+      <button
+        onClick={onNewSettings}
+        className="absolute top-4 left-4 z-30 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg transition-colors"
+      >
+        <span className="text-sm font-medium">New Settings</span>
+      </button>
+
       {/* Stamina Bar */}
       <StaminaBar 
         currentRound={currentRound}
