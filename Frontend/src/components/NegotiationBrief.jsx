@@ -237,7 +237,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
 
             <button
               type="submit"
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 border-8 border-gray-800"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 border-8 border-purple-800"
             >
               Got it, let’s negotiate!
             </button>
