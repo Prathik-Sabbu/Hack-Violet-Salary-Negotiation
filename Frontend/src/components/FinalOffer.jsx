@@ -3,6 +3,7 @@ import { sendChatMessage } from '../services/apiClient'
 
 
 function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outcome }) {
+  console.log("FinalOffer playerData:", playerData);
   const [isAnimating, setIsAnimating] = useState(true)
   const [aiFeedback, setAiFeedback] = useState({
   pros: [],
@@ -116,7 +117,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Target Range:</span>
                   <span className="text-sm font-medium" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                    ${(playerData?.targetRange?.min || 0).toLocaleString()} - ${(playerData?.targetRange?.max || 0).toLocaleString()}
+                    ${(playerData?.salaryRange?.[0] || 0).toLocaleString()} - ${(playerData?.salaryRange?.[1] || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 flex justify-between items-center">
