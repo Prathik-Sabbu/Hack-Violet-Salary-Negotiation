@@ -180,6 +180,13 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   setCurrentOffer(playerData?.currentSalary || 0)
   setNegotiationStatus('negotiating')
   setHint('')
+  
+  // Reset backend chat
+  try {
+    await initializeChat()
+  } catch (err) {
+    console.error('Failed to initialize chat:', err)
+  }
 }
 
   useEffect(() => {

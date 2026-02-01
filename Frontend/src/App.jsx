@@ -5,6 +5,15 @@ import { initializeChat } from './services/apiClient'
 
 // LocalStorage key for persisting player data
 const STORAGE_KEY = 'negotiation_player_data'
+const SESSION_KEY = 'negotiation_session_active'
+
+// Clear localStorage on fresh browser session (server restart)
+// but preserve it on page reloads
+if (!sessionStorage.getItem(SESSION_KEY)) {
+  // Fresh browser session - clear saved state
+  localStorage.removeItem(STORAGE_KEY)
+  sessionStorage.setItem(SESSION_KEY, 'true')
+}
 
 // Mock data for dev mode - skip setup with ?skip in URL
 const DEV_PLAYER_DATA = {
@@ -25,13 +34,7 @@ function App() {
   const skipSetup = new URLSearchParams(window.location.search).has('skip')
 
   // Try to restore player data from localStorage
-  // In dev mode, always start fresh unless ?resume is in URL
   const getSavedPlayerData = () => {
-    // In development, skip localStorage unless explicitly requested
-    if (import.meta.env.DEV && !new URLSearchParams(window.location.search).has('resume')) {
-      return null
-    }
-    
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       return saved ? JSON.parse(saved) : null
