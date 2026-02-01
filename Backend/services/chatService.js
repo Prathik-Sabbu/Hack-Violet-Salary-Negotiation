@@ -111,20 +111,37 @@ PART 1 — Dialogue:
 - No bullet points, no headings, no JSON
 
 PART 2 — Metadata (HIDDEN JSON IN HTML COMMENTS):
-Immediately after dialogue, output an HTML comment block containing ONLY valid JSON (example below).:
+Immediately after dialogue, output an HTML comment block containing ONLY valid JSON:
+
 <!--
 {"turn_flags":{
   "new_strong_argument":"N",
   "repeated_argument":"N",
   "conduct":"professional",
   "asked_amount_present":"N",
-  "accepted_distraction":"N"
+  "accepted_distraction":"N",
+  "hint":""
 }}
 -->
+
 ABSOLUTE RULES:
+- Output exactly these keys inside turn_flags:
+  new_strong_argument, repeated_argument, conduct, asked_amount_present, accepted_distraction, hint
 - No extra keys.
 - No additional text after -->.
 - No backticks. No code fences.
+
+Rules for "hint":
+- If CURRENT STATE status is NOT "stalled", set "hint" to "".
+- If CURRENT STATE status IS "stalled", write ONE short coaching hint (1 sentence, <= 20 words)
+  telling the employee what NEW information to add next.
+`;
+
+const COACH_SYSTEM = `
+You are a negotiation coach. Be direct and practical.
+Give feedback to the employee (the user). No roleplay.
+Focus on: what they did well, what to improve, and 2 concrete next-time tips.
+Keep it short (80-140 words). No bullet points.
 `;
 
 const openrouter = new OpenRouter({
@@ -243,7 +260,7 @@ function updateStateFromTurnFlags(stateObj, turnFlags) {
         if (!stateObj.rude_warning_issued) {
             stateObj.rude_warning_issued = true;
         } else if (stateObj.rude_streak >= 2) {
-        // only end if rudeness continues + they keep repeating
+        // only end if rudeness continues
             stateObj.status = "too_rude";
             stateObj.hint = "";
             return stateObj;
@@ -300,10 +317,13 @@ function updateStateFromTurnFlags(stateObj, turnFlags) {
 
     // Hint only on stalled
     if (stateObj.status === "stalled") {
-        stateObj.hint =
-        stateObj.stalled_streak === 2
-            ? "FINAL CHANCE: Add ONE new specific: named market source + level/location, quantified KPI, scope increase, competing offer with numbers, or internal equity mismatch."
-            : "Add ONE new specific: named market source + level/location, quantified KPI, scope increase, competing offer with numbers, or internal equity mismatch.";
+        if (typeof turnFlags.hint === "string" && turnFlags.hint.trim() !== "") {
+            stateObj.hint = turnFlags.hint.trim();
+        } else {
+            // fallback safety hint (optional but recommended)
+            stateObj.hint =
+            "Add one NEW concrete data point: a named market source, quantified KPI, scope increase, competing offer, or internal equity mismatch.";
+        } 
     } else {
         stateObj.hint = "";
     }
@@ -364,6 +384,51 @@ function extractHiddenJson(rawText) {
     }
 }
 
+async function generateCoachFeedback({ outcome, finalOffer, recentTurns }) {
+    const coachMessages = [
+        { role: "system", content: COACH_SYSTEM },
+        {
+            role: "user",
+            content: `
+                Outcome: ${outcome}
+                Final offer: $${finalOffer}
+
+                Recent conversation (most recent last):
+                ${recentTurns}
+                `.trim(),
+        },
+    ];
+
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://your-app-url.com",
+        "X-Title": "Salary Negotiation Trainer",
+        },
+        body: JSON.stringify({ model: MODEL, messages: coachMessages }),
+    });
+
+    if (!resp.ok) {
+        const errBody = await resp.text();
+        throw new Error(`OpenRouter coach feedback error ${resp.status}: ${errBody}`);
+    }
+
+    const data = await resp.json();
+    return data?.choices?.[0]?.message?.content?.trim() || "";
+}
+
+function terminalMessage(status) {
+    if (status === "end_convo") {
+        return "This conversation isn’t moving forward—without new, specific data we’re done here. The chat has ended.";
+    }
+    if (status === "too_rude") {
+        return "Your behavior isn’t appropriate for a professional discussion. I’m stopping this chat now.";
+    }
+    return "This conversation is closed.";
+}
+
 export async function message(prompt) {
     if (chatHistory.length === 0) {
         throw new Error("Chat not initialized. Call initializeChat() first.");
@@ -378,15 +443,44 @@ export async function message(prompt) {
     ]);
 
     if (terminal.has(state.status)) {
+        if (state.status === "end_convo" || state.status === "too_rude") {
+            return {
+                text: terminalMessage(state.status),
+                metadata: null,
+                state: { ...state },
+                raw: "",
+            };
+        }
+
+        // accepted_distraction / target_reached -> coaching feedback
+        try {
+            // Take last few turns (simple: last 8 messages)
+            const recent = chatHistory
+            .slice(-8)
+            .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+            .join("\n\n");
+
+            const feedback = await generateCoachFeedback({
+                outcome: state.status,
+                finalOffer: state.current_offer,
+                recentTurns: recent,
+            });
+
         return {
-            text:
-                state.status === "too_rude"
-                ? "We’re done. This crossed the line—this conversation is over."
-                : "This conversation is closed. We’re not revisiting compensation right now.",
-            metadata: null,
+            text: feedback || "Nice work. Next time: bring one named market source and one quantified KPI early, then anchor with a specific number and ask a direct close.",
+            metadata: { outcome: state.status },
             state: { ...state },
             raw: "",
         };
+        } catch (e) {
+            console.error("Coach feedback error:", e);
+            return {
+            text: "Nice work. Next time: bring one named market source and one quantified KPI early, then anchor with a specific number and ask a direct close.",
+            metadata: { outcome: state.status },
+            state: { ...state },
+            raw: "",
+            };
+        }
     }
 
     const stateBlock = buildStateSnapshot(state);
@@ -446,11 +540,20 @@ export async function message(prompt) {
     const modelMeta = extractHiddenJson(rawText);
     const turnFlags = modelMeta?.turn_flags ?? null;
 
+    const safeTurnFlags = turnFlags ? {
+        new_strong_argument: turnFlags.new_strong_argument ?? "N",
+        repeated_argument: turnFlags.repeated_argument ?? "N",
+        conduct: turnFlags.conduct ?? "professional",
+        asked_amount_present: turnFlags.asked_amount_present ?? "N",
+        accepted_distraction: turnFlags.accepted_distraction ?? "N",
+        hint: typeof turnFlags.hint === "string" ? turnFlags.hint : "",
+    } : null;
+
     // Strip metadata from dialogue
     const dialogueText = rawText.replace(/<!--[\s\S]*?-->/, "").trim();
 
     // Update backend state
-    if (turnFlags) {
+    if (safeTurnFlags) {
         updateStateFromTurnFlags(state, turnFlags);
     } else {
         console.warn("No model metadata returned; treating as no-data stalled turn.");
@@ -460,6 +563,7 @@ export async function message(prompt) {
             conduct: "professional",
             asked_amount_present: "N",
             accepted_distraction: "N",
+            hint: "",
         });
     }
 
