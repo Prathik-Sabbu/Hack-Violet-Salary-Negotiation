@@ -61,9 +61,6 @@ export async function getSalaryData(jobTitle) {
 /**
  * Calculate target salary based on achievements
  */
-/**
- * Calculate target salary based on achievements
- */
 export function calculateTargetSalary(marketRate, achievements, currentSalary = 0) {
   const ACHIEVEMENT_BONUSES = {
     'Exceeded performance targets': 0.05,
