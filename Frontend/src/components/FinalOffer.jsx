@@ -85,16 +85,16 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
             {/* Header with outcome */}
             <div className="mb-8 mt-12 flex flex-col items-center justify-center text-center">
                 <h2
-                className={`text-3xl font-bold ${showTips ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
-                style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
+                className={`text-5xl font-bold ${showTips ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '3.5rem' }}
                 >
                 {outcome?.title || 'Negotiation Complete'}
                 </h2>
 
     {showTips && (
       <p
-        className="text-gray-600 text-sm mb-6"
-        style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
+        className="text-gray-600 text-lg mb-6"
+        style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}
       >
         {outcome?.message || 'Review your results'}
       </p>
@@ -104,34 +104,34 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
 
             {/* Salary Comparison Section */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+              <h3 className="text-3xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '2.125rem' }}>
                 💰 Final Results
               </h3>
               <div className="bg-white/80 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Starting Salary:</span>
-                  <span className="text-lg font-bold" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+                  <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Starting Salary:</span>
+                  <span className="text-2xl font-bold" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.75rem' }}>
                     ${(playerData?.currentSalary || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Final Offer:</span>
-                  <span className={`text-lg font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+                  <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Final Offer:</span>
+                  <span className={`text-2xl font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.75rem' }}>
                     {isEarlyEnd ? 'Incomplete Offer' : `$${currentOffer.toLocaleString()}`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Target Range:</span>
-                  <span className="text-sm font-medium" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+                  <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Target Range:</span>
+                  <span className="text-lg font-medium" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>
                     ${(playerData?.salaryRange?.[0] || 0).toLocaleString()} - ${(playerData?.salaryRange?.[1] || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Increase:</span>
-                  <span className={`text-xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+                  <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Increase:</span>
+                  <span className={`text-3xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '2.125rem' }}>
                     {isEarlyEnd ? '0%' : `${salaryIncrease >= 0 ? '+' : ''}${increasePercent}%`}
                     {!isEarlyEnd && (
-                      <span className="text-sm font-normal ml-1">
+                      <span className="text-lg font-normal ml-1">
                         (${salaryIncrease >= 0 ? '+' : ''}{salaryIncrease.toLocaleString()})
                       </span>
                     )}
@@ -147,7 +147,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
 
                 {/* What You Did Well */}
                 <div className="mb-8">
-                  <h3 className="text-xl font-bold text-blue-700 mb-4">
+                  <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontSize: '1.5rem' }}>
                     ✅ What You Did Well
                   </h3>
                   <div className="space-y-3">
@@ -165,7 +165,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
 
                 {/* Areas for Improvement */}
                 <div className="mb-8">
-                  <h3 className="text-xl font-bold text-red-700 mb-4">
+                  <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontSize: '1.5rem' }}>
                     ❌ Areas for Improvement
                   </h3>
                   <div className="space-y-3">
@@ -183,7 +183,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
 
                 {/* Tips */}
                 <div className="mb-8">
-                  <h3 className="text-xl font-bold text-green-700 mb-4">💡 Tips for Next Time</h3>
+                  <h3 className="text-xl font-bold text-green-700 mb-4" style={{ fontSize: '1.5rem' }}>💡 Tips for Next Time</h3>
                   <div className="space-y-3">
                     {(isLoading ? ['Loading...'] : aiFeedback.tips).map((tip, index) => (
                       <div key={index} className="flex items-start gap-3">
@@ -199,7 +199,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
               <>
                 <div className="border-t-4 border-gray-400 my-6"></div>
                 <div className="mb-8">
-                  <h3 className="text-xl font-bold text-red-700 mb-4">
+                  <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontSize: '1.5rem' }}>
                     ❌ Areas for Improvement
                   </h3>
                   <div className="space-y-3">

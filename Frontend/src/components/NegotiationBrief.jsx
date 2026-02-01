@@ -125,10 +125,10 @@ function PreNegotiationBrief({ playerData, onClose }) {
           <div className="relative z-10 pl-12">
           {/* Header */}
           <div className="text-center mb-6 border-b-4 border-gray-800 pb-4 mt-12">
-            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+            <h1 className="text-5xl font-bold mb-2" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '3.5rem' }}>
               Pre-Negotiation Brief
             </h1>
-            <p className="text-sm text-gray-700" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+            <p className="text-lg text-gray-700" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>
               Know your worth before you negotiate
             </p>
           </div>
@@ -136,14 +136,14 @@ function PreNegotiationBrief({ playerData, onClose }) {
           {/* Salary Cards */}
           <div className="grid md:grid-cols-3 gap-4 mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             <div className="bg-white border-4 border-gray-800 p-4 text-center">
-              <p className="text-sm">Your Current Salary</p>
-              <p className="text-xl font-bold">{formatCurrency(playerData.currentSalary)}</p>
+              <p className="text-lg" style={{ fontSize: '1.375rem' }}>Your Current Salary</p>
+              <p className="text-3xl font-bold" style={{ fontSize: '2.125rem' }}>{formatCurrency(playerData.currentSalary)}</p>
             </div>
 
             <div className="bg-blue-100 border-4 border-gray-800 p-4 text-center">
-              <p className="text-sm">Market Average</p>
-              <p className="text-xl font-bold">{formatCurrency(playerData.marketRate)}</p>
-              <p className="text-xs">for {playerData.jobTitle}</p>
+              <p className="text-lg" style={{ fontSize: '1.375rem' }}>Market Average</p>
+              <p className="text-3xl font-bold" style={{ fontSize: '2.125rem' }}>{formatCurrency(playerData.marketRate)}</p>
+              <p className="text-base" style={{ fontSize: '1.125rem' }}>for {playerData.jobTitle}</p>
             </div>
 
             <div
@@ -151,11 +151,11 @@ function PreNegotiationBrief({ playerData, onClose }) {
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
             >
-              <p className="text-sm">Your Target Range</p>
-              <p className="text-xl font-bold">
+              <p className="text-lg" style={{ fontSize: '1.375rem' }}>Your Target Range</p>
+              <p className="text-3xl font-bold" style={{ fontSize: '2.125rem' }}>
                 {formatCurrency(targetData.targetRange[0])} – {formatCurrency(targetData.targetRange[1])}
               </p>
-              <p className="text-xs text-gray-600">+{bonusPercentage}% for achievements</p>
+              <p className="text-base text-gray-600" style={{ fontSize: '1.125rem' }}>+{bonusPercentage}% for achievements</p>
 
               {showTooltip && (
                 <div className="absolute z-10 w-72 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-xl left-1/2 -translate-x-1/2 -top-2 -translate-y-full">
@@ -183,7 +183,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
           {/* Achievements */}
           {playerData.achievements.length > 0 && (
             <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
-              <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">Your Achievements</h3>
+              <h3 className="text-xl font-bold mb-3 border-b-2 border-gray-800 pb-2" style={{ fontSize: '1.5rem' }}>Your Achievements</h3>
               <div className="bg-white border-4 border-gray-800 p-4">
                 <ul className="space-y-2">
                   {playerData.achievements.map((a, i) => (
@@ -203,8 +203,8 @@ function PreNegotiationBrief({ playerData, onClose }) {
 
           {/* Profile */}
           <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
-            <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">Your Profile</h3>
-            <div className="bg-white border-4 border-gray-800 p-4 grid grid-cols-2 gap-4 text-sm">
+            <h3 className="text-xl font-bold mb-3 border-b-2 border-gray-800 pb-2" style={{ fontSize: '1.5rem' }}>Your Profile</h3>
+            <div className="bg-white border-4 border-gray-800 p-4 grid grid-cols-2 gap-4 text-base" style={{ fontSize: '1.125rem' }}>
               <div><strong>Experience:</strong> {playerData.experienceLevel}</div>
               <div><strong>Location:</strong> {playerData.location || 'N/A'}</div>
             </div>
@@ -212,8 +212,8 @@ function PreNegotiationBrief({ playerData, onClose }) {
 
           {/* Quick Tips */}
           <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
-            <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">💡 Quick Negotiation Tips</h3>
-            <div className="bg-yellow-100 border-4 border-gray-800 p-4 text-sm space-y-2">
+            <h3 className="text-xl font-bold mb-3 border-b-2 border-gray-800 pb-2" style={{ fontSize: '1.5rem' }}>💡 Quick Negotiation Tips</h3>
+            <div className="bg-yellow-100 border-4 border-gray-800 p-4 text-base space-y-2" style={{ fontSize: '1.125rem' }}>
               <p>1. Lead with data and accomplishments</p>
               <p>2. Avoid hedging language</p>
               <p>3. Anchor in your range ({formatCurrency(targetData.targetRange[0])} – {formatCurrency(targetData.targetRange[1])})</p>
