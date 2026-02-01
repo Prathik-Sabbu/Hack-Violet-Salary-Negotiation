@@ -4,7 +4,11 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import './NegotiationScreen.css'
 import StaminaBar from './StaminaBar'
+<<<<<<< HEAD
 import { sendChatMessage, initializeChat } from '../services/apiClient'
+=======
+import { initializeChat, sendChatMessage } from '../services/api'
+>>>>>>> 495c20067d8a784f900ef8da573cf920f24e69fd
 
 function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
@@ -167,6 +171,33 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     }
   }
 
+  const handlePlayAgain = async () => {
+  // Reset game state
+  setGameState('shlok_speaking')
+  setPlayerMessage('')
+  setDialogue([])
+  setCurrentShlokText('')
+  setTextIndex(0)
+  setCurrentRound(0)
+  setIsLoading(false)
+  setShowBrief(true)
+  setCurrentOffer(playerData?.currentSalary || 0)
+  setNegotiationStatus('negotiating')
+  setHint('')
+}
+
+  useEffect(() => {
+    if (gameState === 'complete') {
+      (async () => {
+        try {
+          await initializeChat()
+        } catch (err) {
+          console.error('Failed to initialize chat:', err)
+        }
+      })()
+    }
+  }, [gameState])
+
   // Negotiation complete screen
   if (gameState === 'complete') {
     const outcome = getOutcomeMessage()
@@ -227,6 +258,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
             </div>
           </div>
 
+<<<<<<< HEAD
           <div className="flex gap-4 justify-center">
             <button
               onClick={async () => {
@@ -248,6 +280,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
               New Settings
             </button>
           </div>
+=======
+          <button
+            onClick={handlePlayAgain}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
+          >
+            Play Again
+          </button>
+>>>>>>> 495c20067d8a784f900ef8da573cf920f24e69fd
         </div>
       </div>
     )
