@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Stardew Valley Font */
+/* VT323 Font */
 @font-face {
-  font-family: 'Stardew Valley';
-  src: url('/font/stardewvalley.woff2') format('woff2'),
-       url('/font/stardewvalley.woff') format('woff');
-  font-weight: normal;
+  font-family: 'vt323-regular-webfont';
+  src: url('/font/vt323-regular-webfont.woff2') format('woff2'),
+       url('/font/vt323-regular-webfont.woff') format('woff');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
