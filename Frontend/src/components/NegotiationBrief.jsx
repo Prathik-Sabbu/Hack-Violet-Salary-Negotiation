@@ -6,7 +6,10 @@ function PreNegotiationBrief({ playerData, onClose }) {
   const [targetData, setTargetData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showTooltip, setShowTooltip] = useState(false)
-  const [targetgoal, settargetgoal] = useState('')
+  
+  // Check if in dev skip mode
+  const skipMode = new URLSearchParams(window.location.search).has('skip')
+  const [targetgoal, settargetgoal] = useState(skipMode ? '126000' : '')
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -95,7 +98,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
           {/* Header */}
           <div className="text-center mb-6 border-b-4 border-gray-800 pb-4 mt-12">
             <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-              Pre-Negotiation Brief
+              Negotiation Brief
             </h1>
             <p className="text-sm text-gray-700" style={{ fontFamily: 'Stardew Valley, monospace' }}>
               Know your worth before you negotiate
