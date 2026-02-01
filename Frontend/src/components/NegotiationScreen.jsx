@@ -6,9 +6,9 @@ import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
 import OfferChange from './OfferChange'
 import './NegotiationScreen.css'
-import { sendChatMessage } from '../services/apiClient'
+import { sendChatMessage, initializeChat } from '../services/apiClient'
 
-function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd }) {
+function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd, skipIntro }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
   const [gameState, setGameState] = useState(skipToEnd ? 'complete' : 'shlok_speaking')
   const [playerMessage, setPlayerMessage] = useState('')
@@ -17,8 +17,9 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   const [textIndex, setTextIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [showInstructions, setShowInstructions] = useState(skipToEnd ? false : true) // Show instructions first
+  const [showInstructions, setShowInstructions] = useState(skipToEnd || skipIntro ? false : true) // Show instructions first
   const [showBrief, setShowBrief] = useState(false) // Show brief after instructions
+  const [chatInitialized, setChatInitialized] = useState(false) // Track if chat is initialized
   const [isTextAnimating, setIsTextAnimating] = useState(false) // Track if text is typing
   const [fullResponseText, setFullResponseText] = useState('') // Store full text for typewriter
 
@@ -36,7 +37,31 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   // Disappointed state - when negative indicators outweigh positive
   const [isDisappointed, setIsDisappointed] = useState(false)
 
+  // Too rude animation state
+  const [tooRudeFrame, setTooRudeFrame] = useState(1)
+
+  // Smile animation state (for accepted_distraction and target_reached)
+  const [smileFrame, setSmileFrame] = useState(1)
+
   const MAX_ROUNDS = 5
+
+  // Auto-initialize chat when skipIntro is true (dev mode)
+  useEffect(() => {
+    if (skipIntro && !chatInitialized && playerData) {
+      const targetGoal = 126000
+      initializeChat({
+        startingSalary: playerData.currentSalary,
+        jobTitle: playerData.jobTitle,
+        marketAverage: playerData.marketRate,
+        targetGoal,
+      }).then(() => {
+        setChatInitialized(true)
+        console.log('Chat auto-initialized with target goal:', targetGoal)
+      }).catch(err => {
+        console.error('Failed to auto-initialize chat:', err)
+      })
+    }
+  }, [skipIntro, chatInitialized, playerData])
 
   // Terminal statuses that end the negotiation
   const TERMINAL_STATUSES = ['accepted_distraction', 'target_reached', 'too_rude', 'end_convo']
@@ -163,6 +188,46 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     }
   }, [gameState, currentRound, fullResponseText, textIndex, showInstructions, showBrief])
 
+  // Too rude animation - plays once (frame 1 → frame 2) then transitions to complete
+  useEffect(() => {
+    if (gameState === 'too_rude_animation') {
+      // After 500ms, switch to frame 2
+      const frameTimeout = setTimeout(() => {
+        setTooRudeFrame(2)
+      }, 500)
+
+      // After 500ms + 200ms delay, transition to complete
+      const completeTimeout = setTimeout(() => {
+        setGameState('complete')
+      }, 700)
+
+      return () => {
+        clearTimeout(frameTimeout)
+        clearTimeout(completeTimeout)
+      }
+    }
+  }, [gameState])
+
+  // Smile animation - plays once (frame 1 → frame 2) for accepted_distraction/target_reached
+  useEffect(() => {
+    if (gameState === 'smile_animation') {
+      // After 500ms, switch to frame 2
+      const frameTimeout = setTimeout(() => {
+        setSmileFrame(2)
+      }, 500)
+
+      // After 500ms + 200ms delay, transition to complete
+      const completeTimeout = setTimeout(() => {
+        setGameState('complete')
+      }, 700)
+
+      return () => {
+        clearTimeout(frameTimeout)
+        clearTimeout(completeTimeout)
+      }
+    }
+  }, [gameState])
+
   // Handle player message submit
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -190,7 +255,16 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     const status = shlokResponse.state?.status
     if (TERMINAL_STATUSES.includes(status) || currentRound >= MAX_ROUNDS - 1) {
       console.log('Negotiation complete!', { status, currentOffer })
-      setGameState('complete')
+
+      // Trigger special animations before showing final screen
+      if (status === 'too_rude') {
+        setGameState('too_rude_animation')
+      } else if (status === 'accepted_distraction' || status === 'target_reached') {
+        setGameState('smile_animation')
+      } else {
+        setGameState('complete')
+      }
+
       onComplete?.({
         dialogue,
         finalRound: currentRound,
@@ -245,6 +319,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     setOfferBoxPulse('')
     prevOfferRef.current = playerData?.currentSalary || 0
     setIsDisappointed(false)
+    setTooRudeFrame(1)
+    setSmileFrame(1)
     // Chat is re-initialized when user submits the Pre-Negotiation Brief
   }
 
@@ -309,9 +385,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
       {/* Character layer - positioned on top of background */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img
-          src={isDisappointed
-            ? (isTextAnimating ? '/shlok_disappointed_mouth_open.png' : '/shlok_disappointed_mouth_closed.png')
-            : (isTextAnimating ? '/shlok_idle_mouth_open.png' : '/shlok_idle_mouth_closed.png')
+          src={
+            gameState === 'too_rude_animation'
+              ? `/shlok_too_rude_${tooRudeFrame}.png`
+              : gameState === 'smile_animation'
+                ? `/shlok_alternate_smile_${smileFrame}.png`
+                : isDisappointed
+                  ? (isTextAnimating ? '/shlok_disappointed_mouth_open.png' : '/shlok_disappointed_mouth_closed.png')
+                  : (isTextAnimating ? '/shlok_idle_mouth_open.png' : '/shlok_idle_mouth_closed.png')
           }
           alt="shlok"
           className="character"

@@ -101,6 +101,7 @@ function App() {
           onComplete={handleNegotiationComplete}
           onNewSettings={handleNewSettings}
           skipToEnd={showEndScreen}
+          skipIntro={skipSetup}
         />
       )}
     </>
