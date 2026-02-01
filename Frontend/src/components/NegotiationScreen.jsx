@@ -4,7 +4,6 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
 import './NegotiationScreen.css'
-import StaminaBar from './StaminaBar'
 import { initializeChat, sendChatMessage } from '../services/apiClient'
 
 function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
@@ -17,8 +16,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   const [currentRound, setCurrentRound] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [showBrief, setShowBrief] = useState(true) // Opens automatically on load
-  const images = ['shlok_idle.png', 'shlok_cinema.png', 'shlok_uninterested.png'];
-  const [index, setIndex] = useState(0);
+  const [isTextAnimating, setIsTextAnimating] = useState(false) // Track if text is typing
+  const [fullResponseText, setFullResponseText] = useState('') // Store full text for typewriter
 
   // AI response metadata
   const [currentOffer, setCurrentOffer] = useState(playerData?.currentSalary || 0)
@@ -70,21 +69,28 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     }
   }
 
-  // Typewriter effect for Shlok's dialogue
+  // Typewriter effect for Shlok's dialogue (round 0)
   useEffect(() => {
     // Pause when brief modal is open
     if (showBrief) return
 
-    if (gameState === 'shlok_speaking') {
-      if (currentRound === 0 && textIndex < OPENING_MESSAGE.length) {
+    if (gameState === 'shlok_speaking' && currentRound === 0) {
+      if (textIndex === 0) {
+        // Start animation
+        setIsTextAnimating(true)
+        setCurrentShlokText('')
+      }
+      
+      if (textIndex < OPENING_MESSAGE.length) {
         // Opening dialogue
         const timer = setTimeout(() => {
           setCurrentShlokText(prev => prev + OPENING_MESSAGE[textIndex])
           setTextIndex(prev => prev + 1)
         }, 30)
         return () => clearTimeout(timer)
-      } else if (currentRound === 0 && textIndex >= OPENING_MESSAGE.length) {
+      } else if (textIndex >= OPENING_MESSAGE.length) {
         // Opening finished
+        setIsTextAnimating(false)
         const timer = setTimeout(() => {
           setGameState('player_typing')
         }, 500)
@@ -98,14 +104,30 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     // Pause when brief modal is open
     if (showBrief) return
 
-    if (gameState === 'shlok_speaking' && currentRound > 0 && currentShlokText) {
-      // Text is already set, just transition to player typing after a delay
-      const timer = setTimeout(() => {
-        setGameState('player_typing')
-      }, 1500)
-      return () => clearTimeout(timer)
+    if (gameState === 'shlok_speaking' && currentRound > 0 && fullResponseText) {
+      if (textIndex === 0) {
+        // Start animation
+        setIsTextAnimating(true)
+        setCurrentShlokText('')
+      }
+      
+      if (textIndex < fullResponseText.length) {
+        // Character by character animation
+        const timer = setTimeout(() => {
+          setCurrentShlokText(prev => prev + fullResponseText[textIndex])
+          setTextIndex(prev => prev + 1)
+        }, 30)
+        return () => clearTimeout(timer)
+      } else if (textIndex >= fullResponseText.length) {
+        // Animation finished
+        setIsTextAnimating(false)
+        const timer = setTimeout(() => {
+          setGameState('player_typing')
+        }, 500)
+        return () => clearTimeout(timer)
+      }
     }
-  }, [gameState, currentRound, currentShlokText, showBrief])
+  }, [gameState, currentRound, fullResponseText, textIndex, showBrief])
 
   // Handle player message submit
   const handleSubmit = async (e) => {
@@ -146,7 +168,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
 
     // Update state for next round
     setCurrentRound(prev => prev + 1)
-    setCurrentShlokText(shlokResponse.text)
+    setFullResponseText(shlokResponse.text)
+    setTextIndex(0) // Reset for typewriter
     setGameState('shlok_speaking')
   }
 
@@ -258,13 +281,21 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         />
       )}
 
-      {/* Shlok office background - full screen */}
+      {/* Background layer - separate from character */}
+      <div className="absolute inset-0">
+        <img
+          src="/your-background.png"
+          alt="Office Background"
+          className="background"
+        />
+      </div>
+
+      {/* Character layer - positioned on top of background */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img
-          src={`/${images[index]}`}
+          src={isTextAnimating ? '/shlok_idle_mouth_open.png' : '/shlok_idle_mouth_closed.png'}
           alt="shlok"
           className="character"
-          onClick={() => setIndex((prev) => (prev + 1) % images.length)}
         />
       </div>
 
@@ -284,12 +315,6 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
       >
         <span className="text-sm font-medium">New Settings</span>
       </button>
-
-      {/* Stamina Bar */}
-      <StaminaBar 
-        currentRound={currentRound}
-        maxRounds={MAX_ROUNDS}
-      />
 
       {/* Dialogue box */}
       <div className="absolute bottom-0 left-0 right-0 p-4">
