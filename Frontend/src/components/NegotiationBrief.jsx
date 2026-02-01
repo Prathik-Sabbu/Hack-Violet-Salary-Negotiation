@@ -7,6 +7,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
   const [loading, setLoading] = useState(true)
   const [showTooltip, setShowTooltip] = useState(false)
   const [targetGoal, setTargetGoal] = useState('')
+  const [isAnimating, setIsAnimating] = useState(true)
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -36,6 +37,12 @@ function PreNegotiationBrief({ playerData, onClose }) {
       alert('Failed to start negotiation. Please try again.')
     }
   }
+
+  // Trigger animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimating(false), 1200)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const fetchTargetSalary = async () => {
@@ -87,28 +94,35 @@ function PreNegotiationBrief({ playerData, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 p-0"
       onClick={handleBackdropClick}
     >
-      <div className="bg-yellow-50 border-8 border-gray-800 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto my-4 relative" style={{ imageRendering: 'pixelated' }}>
-        
-        {/* Red vertical margin line */}
-        <div className="absolute top-0 bottom-0 left-16 w-0.5 bg-red-400 opacity-50 z-0"></div>
-        {/* Binding holes */}
-        <div className="absolute top-6 left-0 right-0 flex justify-around px-12 z-10">
-          <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
-          <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
-          <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
-        </div>
-
+      <div 
+        className={`bg-yellow-50 shadow-2xl max-w-3xl w-full relative pointer-events-auto max-h-[90vh] overflow-y-auto my-4 ${
+          isAnimating ? 'animate-slideUpBounce' : ''
+        }`}
+        style={{ imageRendering: 'pixelated' }}
+      >
         <div
-          className="p-6 relative z-10 pl-12"
+          className="p-6 relative"
           style={{
             backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, #d1d5db 31px, #d1d5db 32px)',
             backgroundSize: '100% 32px',
-            minHeight: '100%',
+            minHeight: '100%'
           }}
         >
+          {/* Red vertical margin line */}
+          <div className="absolute top-0 bottom-0 left-16 w-0.5 bg-red-400 opacity-50 z-0"></div>
+          
+          {/* Notepad binding holes */}
+          <div className="absolute top-6 left-0 right-0 flex justify-around px-12 z-10">
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10 pl-12">
           {/* Header */}
           <div className="text-center mb-6 border-b-4 border-gray-800 pb-4 mt-12">
             <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Stardew Valley, monospace' }}>
@@ -228,7 +242,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
               Got it, let’s negotiate!
             </button>
           </form>
-
+          </div>
         </div>
       </div>
     </div>
