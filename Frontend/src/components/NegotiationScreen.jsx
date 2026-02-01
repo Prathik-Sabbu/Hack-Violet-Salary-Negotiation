@@ -49,7 +49,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
           setNegotiationStatus(response.state.status)
         }
         if (response.state.hint) {
-          setHint(response.state.hint)
+          setHint(response.metadata?.hint)
         } else {
           setHint('')
         }

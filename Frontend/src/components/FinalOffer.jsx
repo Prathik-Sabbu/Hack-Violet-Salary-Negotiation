@@ -1,11 +1,32 @@
+import { useState } from 'react'
+import TipsScreen from './TipsScreen'
+
 function FinalOffer({ playerData, currentOffer }) {
+  const [tipsState, setTipsState] = useState('peeking') // Start with peeking state - always visible
+  
   const salaryIncrease = currentOffer - (playerData?.currentSalary || 0)
   const increasePercent = playerData?.currentSalary
     ? ((salaryIncrease / playerData.currentSalary) * 100).toFixed(1)
     : 0
 
+  const handleExpand = () => {
+    setTipsState('expanded')
+  }
+
+  const handleClose = () => {
+    setTipsState('peeking') // Return to peeking instead of hiding
+  }
+
   return (
-    <div className="bg-gray-100 rounded-lg p-6 mb-6">
+    <>
+      {/* Tips Screen - always visible in peek mode */}
+      <TipsScreen 
+        isPeeking={tipsState === 'peeking'}
+        onExpand={handleExpand}
+        onClose={handleClose}
+      />
+      
+      <div className="bg-gray-100 rounded-lg p-6 mb-6">
       <div className="grid grid-cols-2 gap-4 text-left">
         <div>
           <p className="text-sm text-gray-500">Starting Salary</p>
@@ -36,6 +57,7 @@ function FinalOffer({ playerData, currentOffer }) {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

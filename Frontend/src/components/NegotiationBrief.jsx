@@ -67,15 +67,37 @@ function PreNegotiationBrief({ playerData, onClose }) {
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="bg-yellow-50 border-8 border-gray-800 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
+      <div 
+        className="bg-yellow-50 border-8 border-gray-800 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto my-4 relative"
+        style={{ imageRendering: 'pixelated' }}
+      >
+        <div 
+          className="p-6 relative"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, #d1d5db 31px, #d1d5db 32px)',
+            backgroundSize: '100% 32px',
+            minHeight: '100%'
+          }}
+        >
+          {/* Red vertical margin line - behind content */}
+          <div className="absolute top-0 bottom-0 left-16 w-0.5 bg-red-400 opacity-50 z-0"></div>
+          
+          {/* Notepad binding holes */}
+          <div className="absolute top-6 left-0 right-0 flex justify-around px-12 z-10">
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+            <div className="w-8 h-8 rounded-full bg-gray-800 border-4 border-gray-600"></div>
+          </div>
+
+          {/* Content wrapper */}
+          <div className="relative z-10 pl-12">
 
           {/* Header */}
-          <div className="text-center mb-6 border-b-4 border-gray-800 pb-4">
-            <h1 className="text-3xl font-bold mb-2">
+          <div className="text-center mb-6 border-b-4 border-gray-800 pb-4 mt-12">
+            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Stardew Valley, monospace' }}>
               Pre-Negotiation Brief
             </h1>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700" style={{ fontFamily: 'Stardew Valley, monospace' }}>
               Know your worth before you negotiate
             </p>
           </div>
@@ -219,6 +241,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
             </button>
           </form>
 
+        </div>
         </div>
       </div>
     </div>
