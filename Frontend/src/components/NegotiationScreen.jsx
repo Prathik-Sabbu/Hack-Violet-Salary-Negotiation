@@ -204,9 +204,9 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
       case 'accepted_distraction':
         return { title: 'Deal Made', message: 'You accepted an alternative offer (title/PTO).', color: 'text-blue-600' }
       case 'too_rude':
-        return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', color: 'text-red-600' }
+        return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', status: 'too_rude', color: 'text-red-600' }
       case 'end_convo':
-        return { title: 'Negotiation Ended', message: 'Shlok ended the conversation. Try providing more specific data next time.', color: 'text-orange-600' }
+        return { title: 'Negotiation Ended', message: "You didn't make meaningful points and caused the conversation to end early.", status: 'end_convo', color: 'text-orange-600' }
       case 'stalled':
         return { title: 'Negotiation Stalled', message: 'You ran out of time without making progress.', color: 'text-yellow-600' }
       default:

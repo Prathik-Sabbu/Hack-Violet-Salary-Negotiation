@@ -3,20 +3,23 @@ import { sendChatMessage } from '../services/apiClient'
 
 
 function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outcome }) {
-  console.log("FinalOffer playerData:", playerData);
   const [isAnimating, setIsAnimating] = useState(true)
   const [aiFeedback, setAiFeedback] = useState({
-  pros: [],
-  mistakes: [],
-  tips: []
-});
+    pros: [],
+    mistakes: [],
+    tips: []
+  });
   const [isLoading, setIsLoading] = useState(false);
 
-  
+  const isEarlyEnd = ['too_rude', 'end_convo'].includes(outcome?.status);
+  const showTips = !isEarlyEnd;
+
   const salaryIncrease = currentOffer - (playerData?.currentSalary || 0)
-  const increasePercent = playerData?.currentSalary
-    ? ((salaryIncrease / playerData.currentSalary) * 100).toFixed(1)
-    : 0
+  const increasePercent = isEarlyEnd ? 0 : (
+    playerData?.currentSalary
+      ? ((salaryIncrease / playerData.currentSalary) * 100).toFixed(1)
+      : 0
+  )
 
   // Trigger animation on mount
   useEffect(() => {
@@ -25,11 +28,12 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
   }, [])
 
   useEffect(() => {
+    if (!showTips) return;
+
     const fetchAiFeedback = async () => {
       setIsLoading(true);
       try {
         const response = await sendChatMessage('give tips');
-        // response is { text, metadata, raw }; text is a JSON string of an array
         const text = response?.text ?? '';
         const items = typeof text === 'string' ? JSON.parse(text) : text;
         const arr = Array.isArray(items) ? items : [String(text || '')];
@@ -48,10 +52,10 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
     };
 
     fetchAiFeedback();
-  }, []);
+  }, [showTips]);
 
   return (
-    <div className="fixed inset-0 flex items-end justify-center z-50 p-0">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-0">
       <div 
         className={`bg-yellow-50 shadow-2xl max-w-3xl w-full relative pointer-events-auto max-h-[90vh] overflow-y-auto my-4 ${
           isAnimating ? 'animate-slideUpBounce' : ''
@@ -79,20 +83,22 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
           {/* Content */}
           <div className="relative z-10 pl-12">
             {/* Header with outcome */}
-            <div className="mb-8 mt-12 text-center">
+            <div className="mb-8 mt-12 flex flex-col items-center justify-center text-center">
                 <h2
-                className={`text-3xl font-bold mb-2 ${outcome?.color || 'text-gray-900'}`}
+                className={`text-3xl font-bold ${showTips ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
                 style={{ fontFamily: 'Stardew Valley, monospace' }}
                 >
                 {outcome?.title || 'Negotiation Complete'}
                 </h2>
 
-    <p
-      className="text-gray-600 text-sm mb-6"
-      style={{ fontFamily: 'Stardew Valley, monospace' }}
-    >
-      {outcome?.message || 'Review your results'}
-    </p>
+    {showTips && (
+      <p
+        className="text-gray-600 text-sm mb-6"
+        style={{ fontFamily: 'Stardew Valley, monospace' }}
+      >
+        {outcome?.message || 'Review your results'}
+      </p>
+    )}
   </div>
 
 
@@ -110,8 +116,8 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Final Offer:</span>
-                  <span className="text-lg font-bold text-green-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                    ${currentOffer.toLocaleString()}
+                  <span className={`text-lg font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    {isEarlyEnd ? 'Incomplete Offer' : `$${currentOffer.toLocaleString()}`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -122,67 +128,90 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 flex justify-between items-center">
                   <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Increase:</span>
-                  <span className={`text-xl font-bold ${salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                    {salaryIncrease >= 0 ? '+' : ''}{increasePercent}%
-                    <span className="text-sm font-normal ml-1">
-                      (${salaryIncrease >= 0 ? '+' : ''}{salaryIncrease.toLocaleString()})
-                    </span>
+                  <span className={`text-xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    {isEarlyEnd ? '0%' : `${salaryIncrease >= 0 ? '+' : ''}${increasePercent}%`}
+                    {!isEarlyEnd && (
+                      <span className="text-sm font-normal ml-1">
+                        (${salaryIncrease >= 0 ? '+' : ''}{salaryIncrease.toLocaleString()})
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t-4 border-gray-400 my-6"></div>
+            {showTips ? (
+              <>
+                {/* Divider */}
+                <div className="border-t-4 border-gray-400 my-6"></div>
 
-            {/* What You Did Well */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-blue-700 mb-4">
-                ✅ What You Did Well
-              </h3>
-              <div className="space-y-3">
-                {(isLoading ? ['Loading...'] : aiFeedback.pros).map((pro, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <span className="text-blue-600 font-bold mt-1">{index + 1}.</span>
-                    <p className="text-gray-800 leading-relaxed">{pro}</p>
+                {/* What You Did Well */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-blue-700 mb-4">
+                    ✅ What You Did Well
+                  </h3>
+                  <div className="space-y-3">
+                    {(isLoading ? ['Loading...'] : aiFeedback.pros).map((pro, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="text-blue-600 font-bold mt-1">{index + 1}.</span>
+                        <p className="text-gray-800 leading-relaxed">{pro}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Divider */}
-            <div className="border-t-4 border-gray-400 my-6"></div>
+                {/* Divider */}
+                <div className="border-t-4 border-gray-400 my-6"></div>
 
-            {/* Areas for Improvement */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-red-700 mb-4">
-                ❌ Areas for Improvement
-              </h3>
-              <div className="space-y-3">
-                {(isLoading ? ['Loading...'] : aiFeedback.mistakes).map((mistake, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-1">{index + 1}.</span>
-                    <p className="text-gray-800 leading-relaxed">{mistake}</p>
+                {/* Areas for Improvement */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-red-700 mb-4">
+                    ❌ Areas for Improvement
+                  </h3>
+                  <div className="space-y-3">
+                    {(isLoading ? ['Loading...'] : aiFeedback.mistakes).map((mistake, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="text-red-600 font-bold mt-1">{index + 1}.</span>
+                        <p className="text-gray-800 leading-relaxed">{mistake}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Divider */}
-            <div className="border-t-4 border-gray-400 my-6"></div>
+                {/* Divider */}
+                <div className="border-t-4 border-gray-400 my-6"></div>
 
-            {/* Tips */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-green-700 mb-4">💡 Tips for Next Time</h3>
-              <div className="space-y-3">
-                {(isLoading ? ['Loading...'] : aiFeedback.tips).map((tip, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-1">•</span>
-                    <p className="text-gray-800 leading-relaxed">{tip}</p>
+                {/* Tips */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-green-700 mb-4">💡 Tips for Next Time</h3>
+                  <div className="space-y-3">
+                    {(isLoading ? ['Loading...'] : aiFeedback.tips).map((tip, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="text-green-600 font-bold mt-1">•</span>
+                        <p className="text-gray-800 leading-relaxed">{tip}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              </>
+            ) : (
+              /* Areas for Improvement for too_rude / end_convo */
+              <>
+                <div className="border-t-4 border-gray-400 my-6"></div>
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-red-700 mb-4">
+                    ❌ Areas for Improvement
+                  </h3>
+                  <div className="space-y-3">
+                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                      {outcome?.status === 'too_rude'
+                        ? 'The conversation ended due to unprofessional conduct.'
+                        : "You didn't make meaningful points and caused the conversation to end early."}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Action Buttons */}
             <div className="mt-8 flex gap-4 justify-center">
