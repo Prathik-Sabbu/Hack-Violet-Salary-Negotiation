@@ -31,7 +31,9 @@ const DEV_PLAYER_DATA = {
 
 function App() {
   // Check for ?skip in URL to skip setup screen
-  const skipSetup = new URLSearchParams(window.location.search).has('skip')
+  const urlParams = new URLSearchParams(window.location.search)
+  const skipSetup = urlParams.has('skip')
+  const showEndScreen = urlParams.has('end')
 
   // Try to restore player data from localStorage
   const getSavedPlayerData = () => {
@@ -45,7 +47,7 @@ function App() {
 
   // Game phases: 'setup' → 'negotiation' (brief is now a modal inside negotiation)
   const [gamePhase, setGamePhase] = useState(() => {
-    if (skipSetup) return 'negotiation'
+    if (skipSetup || showEndScreen) return 'negotiation'
     // Check if we have saved player data to resume
     const savedData = getSavedPlayerData()
     if (savedData) return 'negotiation'
@@ -105,6 +107,7 @@ function App() {
           playerData={playerData}
           onComplete={handleNegotiationComplete}
           onNewSettings={handleNewSettings}
+          skipToEnd={showEndScreen}
         />
       )}
     </>

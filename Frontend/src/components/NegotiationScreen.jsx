@@ -6,22 +6,22 @@ import FinalOffer from './FinalOffer'
 import './NegotiationScreen.css'
 import { initializeChat, sendChatMessage } from '../services/apiClient'
 
-function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
+function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
-  const [gameState, setGameState] = useState('shlok_speaking')
+  const [gameState, setGameState] = useState(skipToEnd ? 'complete' : 'shlok_speaking')
   const [playerMessage, setPlayerMessage] = useState('')
   const [dialogue, setDialogue] = useState([])
   const [currentShlokText, setCurrentShlokText] = useState('')
   const [textIndex, setTextIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [showBrief, setShowBrief] = useState(true) // Opens automatically on load
+  const [showBrief, setShowBrief] = useState(skipToEnd ? false : true) // Skip brief if going to end
   const [isTextAnimating, setIsTextAnimating] = useState(false) // Track if text is typing
   const [fullResponseText, setFullResponseText] = useState('') // Store full text for typewriter
 
   // AI response metadata
-  const [currentOffer, setCurrentOffer] = useState(playerData?.currentSalary || 0)
-  const [negotiationStatus, setNegotiationStatus] = useState('negotiating')
+  const [currentOffer, setCurrentOffer] = useState(skipToEnd ? 110000 : (playerData?.currentSalary || 0))
+  const [negotiationStatus, setNegotiationStatus] = useState(skipToEnd ? 'target_reached' : 'negotiating')
   const [hint, setHint] = useState('')
 
   const MAX_ROUNDS = 5
@@ -230,7 +230,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     const outcome = getOutcomeMessage()
 
     return (
-      <div className="game-container relative flex items-center justify-center p-4">
+      <div className="game-container relative flex items-center justify-center">
         {/* Background - same as main game screen */}
         <img
           src="/background.png"
@@ -238,34 +238,16 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
           className="absolute inset-0 w-full h-full object-cover pixel-art"
         />
         {/* Overlay for readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/60" />
 
-        <div className="relative z-10 bg-white/95 rounded-xl shadow-2xl p-8 max-w-2xl w-full text-center">
-          <h1 className={`text-3xl font-bold mb-2 ${outcome.color}`}>
-            {outcome.title}
-          </h1>
-          <p className="text-gray-600 mb-6">
-            {outcome.message}
-          </p>
-
-          {/* Final offer display */}
-          <FinalOffer playerData={playerData} currentOffer={currentOffer} />
-
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={handlePlayAgain}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
-            >
-              Play Again
-            </button>
-            <button
-              onClick={onNewSettings}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
-            >
-              New Game
-            </button>
-          </div>
-        </div>
+        {/* FinalOffer component now handles its own notepad display */}
+        <FinalOffer 
+          playerData={playerData} 
+          currentOffer={currentOffer}
+          outcome={outcome}
+          onPlayAgain={handlePlayAgain}
+          onNewSettings={onNewSettings}
+        />
       </div>
     )
   }
