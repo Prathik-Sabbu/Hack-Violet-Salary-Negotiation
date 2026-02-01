@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import TextArea from './TextArea'
 import ShlokText from './ShlokText'
+import InstructionScreen from './InstructionScreen'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
 import OfferChange from './OfferChange'
@@ -16,7 +17,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   const [textIndex, setTextIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [showBrief, setShowBrief] = useState(skipToEnd ? false : true) // Skip brief if going to end
+  const [showInstructions, setShowInstructions] = useState(skipToEnd ? false : true) // Show instructions first
+  const [showBrief, setShowBrief] = useState(false) // Show brief after instructions
   const [isTextAnimating, setIsTextAnimating] = useState(false) // Track if text is typing
   const [fullResponseText, setFullResponseText] = useState('') // Store full text for typewriter
 
@@ -103,8 +105,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
 
   // Typewriter effect for Shlok's dialogue (round 0)
   useEffect(() => {
-    // Pause when brief modal is open
-    if (showBrief) return
+    // Pause when instruction or brief modal is open
+    if (showInstructions || showBrief) return
 
     if (gameState === 'shlok_speaking' && currentRound === 0) {
       if (textIndex === 0) {
@@ -129,12 +131,12 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
         return () => clearTimeout(timer)
       }
     }
-  }, [gameState, textIndex, currentRound, showBrief])
+  }, [gameState, textIndex, currentRound, showInstructions, showBrief])
 
   // Typewriter for subsequent rounds
   useEffect(() => {
-    // Pause when brief modal is open
-    if (showBrief) return
+    // Pause when instruction or brief modal is open
+    if (showInstructions || showBrief) return
 
     if (gameState === 'shlok_speaking' && currentRound > 0 && fullResponseText) {
       if (textIndex === 0) {
@@ -159,7 +161,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
         return () => clearTimeout(timer)
       }
     }
-  }, [gameState, currentRound, fullResponseText, textIndex, showBrief])
+  }, [gameState, currentRound, fullResponseText, textIndex, showInstructions, showBrief])
 
   // Handle player message submit
   const handleSubmit = async (e) => {
@@ -213,9 +215,9 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
       case 'accepted_distraction':
         return { title: 'Deal Made', message: 'You accepted an alternative offer (title/PTO).', color: 'text-blue-600' }
       case 'too_rude':
-        return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', color: 'text-red-600' }
+        return { title: 'Negotiation Failed', message: 'The conversation ended due to unprofessional conduct.', status: 'too_rude', color: 'text-red-600' }
       case 'end_convo':
-        return { title: 'Negotiation Ended', message: 'Shlok ended the conversation. Try providing more specific data next time.', color: 'text-orange-600' }
+        return { title: 'Negotiation Ended', message: "You didn't make meaningful points and caused the conversation to end early.", status: 'end_convo', color: 'text-orange-600' }
       case 'stalled':
         return { title: 'Negotiation Stalled', message: 'You ran out of time without making progress.', color: 'text-yellow-600' }
       default:
@@ -232,7 +234,8 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     setTextIndex(0)
     setCurrentRound(0)
     setIsLoading(false)
-    setShowBrief(true)
+    setShowInstructions(true)
+    setShowBrief(false)
     setCurrentOffer(playerData?.currentSalary || 0)
     setNegotiationStatus('negotiating')
     setHint('')
@@ -276,6 +279,16 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   // Main negotiation scene
   return (
     <div className="game-container relative">
+      {/* Instruction Screen Modal */}
+      {showInstructions && (
+        <InstructionScreen
+          onClose={() => {
+            setShowInstructions(false)
+            setShowBrief(true)
+          }}
+        />
+      )}
+
       {/* Pre-Negotiation Brief Modal */}
       {showBrief && (
         <PreNegotiationBrief
