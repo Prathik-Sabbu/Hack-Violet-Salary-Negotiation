@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { GoogleGenAI } from "@google/genai";
+import { OpenRouter } from "@openrouter/sdk";
 
 const starting_salary= 75000;
 const job_title = 'Software Engineer';
@@ -7,6 +7,7 @@ const market_average = 94000;
 const target_goal = 100000;
 const salary_used = (starting_salary === 0)? market_average : starting_salary;
 const day_goal = Math.max(0, (target_goal - salary_used)/3);
+const difficulty = "easy";
 
 const PERSONA_INSTRUCTION = `
 You are 'Shlok,' a high-level corporate manager. You are profit-driven, hurried, and subtly biased in ways that commonly reinforce gender pay gaps. You are negotiating with a female employee in the role of ${job_title}.
@@ -169,70 +170,74 @@ DIALOGUE RULES
 - If too_rude or end_convo → close firmly, no invitation to continue
 `;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const openrouter = new OpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY
+});
 
-if (!process.env.GEMINI_API_KEY) {
-    console.warn('GEMINI_API_KEY is not set. AI calls will fail until configured.');
-}
+const MODEL = "google/gemini-3-flash-preview"; // swap to any OpenRouter model string
 
-let chatInstance = null;
+if (!process.env.OPENROUTER_API_KEY) {
+    console.warn('OPENROUTER_API_KEY is not set. AI calls will fail until configured.');
+} 
+
+let chatHistory = [];
 
 export async function initializeChat() {
-    chatInstance = await ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-            systemInstruction: PERSONA_INSTRUCTION,
-            thinkingConfig: {
-                includeThoughts: false,
-                thinkingLevel: 'LOW',
-            },
-        },
-    });
+    chatHistory = [
+        { role: "system", content: PERSONA_INSTRUCTION }
+    ];
     console.log('Chat initialized successfully');
 }
 
 export async function message(prompt) {
-    if (!chatInstance) {
-        throw new Error('Chat not initialized. Call initializeChat() first.'); 
+    if (chatHistory.length === 0) {
+        throw new Error('Chat not initialized. Call initializeChat() first.');
     }
 
-    let output;
+    chatHistory.push({ role: "user", content: prompt });
+
+    if (!process.env.OPENROUTER_API_KEY) {
+        chatHistory.pop();
+        throw new Error('OPENROUTER_API_KEY is not defined. Set it in your environment or .env file.');
+    }
+
+    let response;
     try {
-        output = await chatInstance.sendMessage({ message: prompt });
+        response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://your-app-url.com",
+                "X-Title": "Salary Negotiation Trainer"
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: chatHistory
+            })
+        });
     } catch (err) {
-        console.error('AI sendMessage error:', err);
+        chatHistory.pop();
+        console.error('OpenRouter fetch error:', err);
         throw new Error('AI service error: ' + (err?.message || String(err)));
     }
 
-    // ---- Normalize Gemini response to raw text ----
-    let rawText = null;
-
-    if (typeof output === 'string') {
-        rawText = output;
-    } else if (output?.text) {
-        rawText = output.text;
-    } else if (output?.outputText) {
-        rawText = output.outputText;
-    } else if (output?.message?.content && Array.isArray(output.message.content)) {
-        const part = output.message.content.find(c => c?.text);
-        if (part?.text) rawText = part.text;
-    } else if (output?.outputs && Array.isArray(output.outputs)) {
-        for (const out of output.outputs) {
-            if (out?.content && Array.isArray(out.content)) {
-                const t = out.content.find(c => c?.text);
-                if (t?.text) {
-                    rawText = t.text;
-                    break;
-                }
-            }
-        }
+    if (!response.ok) {
+        chatHistory.pop();
+        const errBody = await response.text();
+        console.error('OpenRouter HTTP error:', response.status, errBody);
+        throw new Error(`OpenRouter returned ${response.status}: ${errBody}`);
     }
+
+    const data = await response.json();
+    const rawText = data?.choices?.[0]?.message?.content ?? '';
 
     if (!rawText) {
-        rawText = JSON.stringify(output);
+        console.warn('OpenRouter returned an empty response body.');
     }
 
-    // ---- Extract hidden metadata JSON from HTML comment ----
+    chatHistory.push({ role: "assistant", content: rawText });
+
     let metadata = null;
     const metaMatch = rawText.match(/<!--\s*({[\s\S]*?})\s*-->/);
 
@@ -244,7 +249,6 @@ export async function message(prompt) {
         }
     }
 
-    // ---- Remove metadata block from dialogue text ----
     const dialogueText = rawText
         .replace(/<!--[\s\S]*?-->/, '')
         .trim();
@@ -255,4 +259,3 @@ export async function message(prompt) {
         raw: rawText
     };
 }
-
