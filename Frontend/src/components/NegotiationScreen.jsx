@@ -259,7 +259,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
               onClick={handlePlayAgain}
               className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
             >
-              Same Settings
+              Play Again
             </button>
             <button
               onClick={onNewSettings}

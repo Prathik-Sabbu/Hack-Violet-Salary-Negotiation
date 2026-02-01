@@ -48,6 +48,7 @@ function App() {
     if (savedData) return 'negotiation'
     return 'setup'
   })
+
   const [playerData, setPlayerData] = useState(() => {
     if (skipSetup) return DEV_PLAYER_DATA
     // Restore from localStorage if available
