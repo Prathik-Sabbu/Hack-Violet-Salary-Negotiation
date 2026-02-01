@@ -1,0 +1,107 @@
+/* Floating offer change animation - purchase-style */
+
+.offer-change {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'vt323-regular-webfont', monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 50;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Positive change (increase) - green with upward float */
+.offer-change.positive {
+  color: #22c55e;
+}
+
+/* Negative change (decrease) - red with downward float */
+.offer-change.negative {
+  color: #ef4444;
+}
+
+/* Animation states */
+.offer-change.animating {
+  animation: floatUp 1.5s ease-out forwards;
+}
+
+.offer-change.fading {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Float upward animation for positive changes */
+.offer-change.positive.animating {
+  animation: floatUp 1.5s ease-out forwards;
+}
+
+/* Float downward animation for negative changes */
+.offer-change.negative.animating {
+  animation: floatDown 1.5s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.2);
+  }
+  30% {
+    transform: translateX(-50%) translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-60px) scale(0.9);
+  }
+}
+
+@keyframes floatDown {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.2);
+  }
+  30% {
+    transform: translateX(-50%) translateY(10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(60px) scale(0.9);
+  }
+}
+
+/* Pulse effect on the current offer box when it changes */
+@keyframes pulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0.3);
+  }
+}
+
+@keyframes pulseRed {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0.3);
+  }
+}
+
+.offer-box-pulse-positive {
+  animation: pulseGreen 0.6s ease-in-out 2;
+}
+
+.offer-box-pulse-negative {
+  animation: pulseRed 0.6s ease-in-out 2;
+}

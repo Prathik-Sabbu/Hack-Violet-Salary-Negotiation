@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TextArea from './TextArea'
 import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
+import OfferChange from './OfferChange'
 import './NegotiationScreen.css'
 import { sendChatMessage } from '../services/apiClient'
 
@@ -24,6 +25,12 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   const [negotiationStatus, setNegotiationStatus] = useState(skipToEnd ? 'target_reached' : 'negotiating')
   const [hint, setHint] = useState('')
 
+  // Animation state for offer changes
+  const [offerDelta, setOfferDelta] = useState(0)
+  const [animationTrigger, setAnimationTrigger] = useState(0)
+  const [offerBoxPulse, setOfferBoxPulse] = useState('')
+  const prevOfferRef = useRef(currentOffer)
+
   const MAX_ROUNDS = 5
 
   // Terminal statuses that end the negotiation
@@ -42,7 +49,21 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
       // Update metadata state
       if (response.state) {
         if (response.state.current_offer !== undefined) {
-          setCurrentOffer(response.state.current_offer)
+          const newOffer = response.state.current_offer
+          const delta = newOffer - prevOfferRef.current
+
+          // Trigger animation if there's a change
+          if (delta !== 0) {
+            setOfferDelta(delta)
+            setAnimationTrigger(prev => prev + 1)
+
+            // Add pulse effect to the offer box
+            setOfferBoxPulse(delta > 0 ? 'offer-box-pulse-positive' : 'offer-box-pulse-negative')
+            setTimeout(() => setOfferBoxPulse(''), 1200)
+          }
+
+          setCurrentOffer(newOffer)
+          prevOfferRef.current = newOffer
         }
         if (response.state.status) {
           setNegotiationStatus(response.state.status)
@@ -204,6 +225,11 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     setCurrentOffer(playerData?.currentSalary || 0)
     setNegotiationStatus('negotiating')
     setHint('')
+    // Reset animation state
+    setOfferDelta(0)
+    setAnimationTrigger(0)
+    setOfferBoxPulse('')
+    prevOfferRef.current = playerData?.currentSalary || 0
     // Chat is re-initialized when user submits the Pre-Negotiation Brief
   }
 
@@ -266,12 +292,15 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
 
       {/* Current offer display - top center */}
       {currentOffer > 0 && (
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-30 bg-green-50 border-4 border-green-600 rounded-lg px-6 py-3">
+        <div className={`absolute top-8 left-1/2 transform -translate-x-1/2 z-30 bg-green-50 border-4 border-green-600 rounded-lg px-6 py-3 ${offerBoxPulse}`}>
           <span className="text-green-700 text-lg font-medium" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             Current Offer: ${currentOffer.toLocaleString()}
           </span>
         </div>
       )}
+
+      {/* Floating offer change animation */}
+      <OfferChange delta={offerDelta} trigger={animationTrigger} />
 
       {/* Bottom-left button to reopen brief */}
       <button
