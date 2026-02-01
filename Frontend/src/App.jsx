@@ -38,9 +38,9 @@ function App() {
     if (skipSetup) return 'negotiation'
     return 'setup'
   })
+
   const [playerData, setPlayerData] = useState(() => {
     if (skipSetup) return DEV_PLAYER_DATA
-    if (savedData) return savedData
     return null
   })
 
