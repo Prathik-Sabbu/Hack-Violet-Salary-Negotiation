@@ -36,12 +36,11 @@ function App() {
   // Game phases: 'setup' → 'negotiation' (brief is now a modal inside negotiation)
   const [gamePhase, setGamePhase] = useState(() => {
     if (skipSetup) return 'negotiation'
-    if (savedData) return 'negotiation'
     return 'setup'
   })
+
   const [playerData, setPlayerData] = useState(() => {
     if (skipSetup) return DEV_PLAYER_DATA
-    if (savedData) return savedData
     return null
   })
 
