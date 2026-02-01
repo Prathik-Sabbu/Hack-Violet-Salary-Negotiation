@@ -1,31 +1,49 @@
 function Home({ onStartGame, onNewGame, hasSavedData }) {
   return (
-    <div 
-      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-      }}
-    >
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating coin/money icons could go here */}
-      </div>
+    <>
+      <style>
+        {`
+          @keyframes logoPulse {
+            0%, 100% {
+              transform: scale(1);
+              opacity: 0.7;
+            }
+            50% {
+              transform: scale(1.2);
+              opacity: 1.0;
+            }
+          }
+          .logo-pulse {
+            animation: logoPulse 2s ease-in-out infinite;
+          }
+        `}
+      </style>
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        }}
+      >
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Floating coin/money icons could go here */}
+        </div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center gap-2 p-4">
-        {/* Game Logo */}
-        <div className="mb-1">
-          <img 
-            src="/game_logo.png" 
-            alt="Know Your Worth" 
-            className="w-full h-auto"
-            style={{ 
-              imageRendering: 'pixelated', 
-              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3))',
-              maxWidth: '700px',
-              maxHeight: '400px'
-            }}
-          />
+        {/* Main content */}
+        <div className="relative z-10 flex flex-col items-center gap-2 p-4">
+          {/* Game Logo */}
+          <div className="mb-1">
+            <img 
+              src="/game_logo.png" 
+              alt="Know Your Worth" 
+              className="w-full h-auto logo-pulse"
+              style={{ 
+                imageRendering: 'pixelated', 
+                filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3))',
+                maxWidth: '700px',
+                maxHeight: '400px'
+              }}
+            />
         </div>
 
         {/* Buttons */}
@@ -84,6 +102,7 @@ function Home({ onStartGame, onNewGame, hasSavedData }) {
         </p>
       </div>
     </div>
+    </>
   )
 }
 
