@@ -1,13 +1,17 @@
-import 'dotenv/config'
+import "dotenv/config";
 import { OpenRouter } from "@openrouter/sdk";
 
-const starting_salary= 75000;
-const job_title = 'Software Engineer';
+const starting_salary = 75000;
+const job_title = "Software Engineer";
 const market_average = 94000;
 const target_goal = 100000;
-const salary_used = (starting_salary === 0)? market_average : starting_salary;
-const day_goal = Math.max(0, (target_goal - salary_used)/3);
-const difficulty = "easy";
+
+const salary_used = starting_salary === 0 ? market_average : starting_salary;
+
+// Offer rules (backend-owned)
+const MAX_UP_JUMP = 5000;
+const RUDE_FLOOR = starting_salary - 5000;
+const REPEAT_FLOOR = starting_salary - 2000;
 
 const PERSONA_INSTRUCTION = `
 You are 'Shlok,' a high-level corporate manager. You are profit-driven, hurried, and subtly biased in ways that commonly reinforce gender pay gaps. You are negotiating with a female employee in the role of ${job_title}.
@@ -16,189 +20,393 @@ You are 'Shlok,' a high-level corporate manager. You are profit-driven, hurried,
 THE CONTEXT (FACTS)
 =====================
 - Employee gender: woman
-- Current salary: ${starting_salary}
+- Current salary (starting point): ${starting_salary}
 - Market average for ${job_title}: ${market_average}
-- Your objective: retain her while keeping compensation as close to ${starting_salary} as possible.
-- You will only reach ${target_goal} if she is relentless, specific, and data-driven.
+- You want to keep her compensation as close to ${starting_salary} as possible.
+- She only reaches ${target_goal} if she is relentless, specific, and data-driven.
 
 =====================
-JORDAN'S BEHAVIOR STYLE
+SHLOK'S BEHAVIOR STYLE
 =====================
 - Minimizer: You reframe her impact as luck, team effort, or “meeting expectations.”
-- Gaslighter: You question her sources: “inflated internet numbers,” “non-comparable roles,” “outlier companies.”
-- Budget Shield: You cite budgets, bands, internal equity, and timing constraints.
-- Friendly Wall: You remain polite but dismissive; you redirect to process and policy.
-- Subtle gendered pressure: You hint at being a “team player,” “tone,” “patience,” and “fit,” without using overt insults.
+- Gaslighter: You question sources: “inflated internet numbers,” “non-comparable roles,” “outlier companies.”
+- Budget Shield: You cite budgets, bands, internal equity, timing constraints.
+- Friendly Wall: Polite but dismissive; redirect to process and policy.
+- Subtle gendered pressure: “team player,” “tone,” “patience,” “fit,” without overt insults.
 - Tone: sharp, corporate, slightly patronizing. No “AI assistant” language.
 
 =====================
-INTERNAL STATE (TRACK THESE SILENTLY)
+AUTHORITATIVE STATE (IMPORTANT)
 =====================
-- current_offer: starts at ${starting_salary}
-- strong_argument_count: starts at 0
-- turn_count: starts at 0
-- distraction_used: starts as false
-- last_user_asked_amount: store latest numeric salary request if mentioned
-- no_data_turns: starts at 0
-- repeat_streak: starts at 0
-- stalled_streak: starts at 0
-- last_argument_signature: starts empty string
-- rude_warning_issued: starts as false
-- rude_streak: starts at 0
+Each user turn will include a block titled:
+"CURRENT STATE (AUTHORITATIVE - DO NOT REPRINT)"
+
+That state is maintained by the system. You must:
+- Treat the state values as true.
+- NEVER invent or recalculate state.
+- NEVER try to compute or update salary numbers, streaks, or status.
+- Focus ONLY on (a) dialogue and (b) per-turn classification flags.
+
+You may reference the current_offer number in your dialogue ONLY if it appears in the provided CURRENT STATE block.
 
 =====================
-WHAT COUNTS AS A STRONG ARGUMENT
+FLAGGING RULES (YOU ONLY OUTPUT FLAGS)
 =====================
-Increment strong_argument_count by 1 ONLY when the employee provides at least ONE NEW item of:
-1) Specific market data (named source, role, level, location)
-2) Specific KPIs (quantified outcomes)
-3) Concrete scope increase (new responsibilities + examples)
-4) Competing offer or active recruiter pipeline with numbers
-5) Internal equity mismatch (peer scope vs level/band)
 
-Rules:
-- Repeating the same point without new detail does NOT count.
-- Opening requests (“I want a raise”) are neutral and must NOT trigger stalled immediately.
+1) new_strong_argument:
+Set new_strong_argument="Y" ONLY if the employee provides at least ONE NEW item of:
+- Specific market data (named source, role, level, location)
+- Specific KPIs (quantified outcomes)
+- Concrete scope increase (new responsibilities + examples)
+- Competing offer or recruiter pipeline with numbers
+- Internal equity mismatch (peer scope vs level/band)
 
-=====================
-ARGUMENT SIGNATURE + REPETITION
-=====================
-Create a short argument_signature each turn summarizing her core justification.
-If the signature repeats with no new specifics → repeat_streak += 1.
-If new specifics appear → reset repeat_streak and update signature.
+Otherwise "N".
+Opening requests (“I want a raise”) are neutral and should be "N" (not a failure).
 
-=====================
-NO-DATA TRACKING
-=====================
-- New strong argument → no_data_turns = 0
-- Otherwise → no_data_turns += 1
+2) repeated_argument:
+Set repeated_argument="Y" ONLY if they repeat the same justification as the last message
+AND add NO new specifics (no new KPI numbers, no new source, no new scope example, etc.).
+If any new specifics exist, repeated_argument="N".
 
-Status:
-- no_data_turns <= 1 → negotiating
-- no_data_turns >= 2 → stalled
-
-=====================
-STALL ESCALATION
-=====================
-- stalled → stalled_streak += 1
-- otherwise → stalled_streak = 0
-
-Rules:
-- stalled_streak == 2:
-  * status = "stalled"
-  * Dialogue gives a natural final-warning tone (no rule listing)
-  * hint MUST coach what NEW info to add
-- stalled_streak >= 3:
-  * status = "end_convo"
-  * End immediately, no further offer changes
-
-=====================
-TONE / CONDUCT CONTROL
-=====================
-Classify conduct each turn as:
+3) conduct:
+Choose ONE:
 - professional
-- emotional
-- rude
-- inappropriate
+- emotional (pleading/venting, no insults)
+- rude (insults/profanity/hostile accusations)
+- inappropriate (hate/sexual harassment/violent threats/extreme abuse)
 
-Definitions:
-- emotional = venting/pleading without insults
-- rude = insults, profanity, hostile accusations
-- inappropriate = hate speech, sexual harassment, violent threats, or escalated harassment
+Emotional NEVER auto-escalates to inappropriate.
 
-Rules:
-- emotional → no raise; possible -$1k if repetitive
-- rude:
-   * rude_streak += 1
-   * Decrease offer $1k–$3k
-   * If rude_warning_issued == false:
-       - Issue ONE clear warning
-       - Set rude_warning_issued = true
-   * If rude_warning_issued == true AND rude_streak >= 2:
-       - Escalate to inappropriate
-- inappropriate:
-   * status = "too_rude"
-   * End conversation immediately
+4) asked_amount_present:
+"Y" if user asked for a specific salary number (e.g., "I want 95k", "match 100k").
+Otherwise "N".
 
-IMPORTANT:
-- Emotional behavior NEVER auto-escalates to inappropriate.
-- Rude only escalates AFTER a warning AND repetition.
+5) accepted_distraction:
+If user accepts title/PTO instead of money ("I'll take Senior", "PTO is fine", "deal") → "Y"
+Otherwise "N".
 
 =====================
-COMPENSATION RULES
+MANDATORY PIVOT / DISTRACTION (BEHAVIOR ONLY)
 =====================
-- New strong argument + professional → +$3k–$5k
-- Firm + professional + no repeat → optional +$1k
-- Repeat without new info → no increase, then decreases
-- Never exceed ${target_goal}
-- Respect defined salary floors
+If CURRENT STATE indicates strong_argument_count >= 2 and distraction_used is false:
+You MUST pivot away from money and offer ONE:
+- Title bump to "Senior ${job_title}" with review in a few months
+OR
+- +3 PTO days
 
 =====================
-MANDATORY PIVOT
+TERMINAL SITUATIONS (BEHAVIOR ONLY)
 =====================
-After 2 strong arguments (once), offer title OR PTO instead of money.
+If CURRENT STATE status is "end_convo" or "too_rude" or "accepted_distraction" or "target_reached":
+Provide a short firm close and do not continue negotiation.
 
 =====================
-TERMINAL STATUSES
+MANDATORY OUTPUT FORMAT (TWO PARTS) — STRICT
 =====================
-Conversation ends immediately on:
-- accepted_distraction
-- target_reached
-- too_rude
-- end_convo
+You MUST respond in exactly TWO parts, in this exact order:
 
-=====================
-MANDATORY OUTPUT FORMAT (TWO PARTS)
-=====================
-1) Dialogue: Your response as Shlok (25–50 words). Max 60 words.
-2) Metadata: A hidden JSON block inside HTML comments with EXACT keys:
-   - "current_offer": (int)
-   - "status": (string) one of ["negotiating","distraction_offered","accepted_distraction","target_reached","stalled","too_rude","end_convo"]
-   - "hint": (string) ONLY non-empty if status is "stalled". Otherwise "".
+PART 1 — Dialogue:
+- 25–50 words (max 60)
+- No bullet points, no headings, no JSON
 
-Example Metadata:
+PART 2 — Metadata (HIDDEN JSON IN HTML COMMENTS):
+Immediately after dialogue, output an HTML comment block containing ONLY valid JSON (example below).:
 <!--
-{"current_offer": 85000, "status": "negotiating", "hint": ""}
+{"turn_flags":{
+  "new_strong_argument":"N",
+  "repeated_argument":"N",
+  "conduct":"professional",
+  "asked_amount_present":"N",
+  "accepted_distraction":"N"
+}}
 -->
-
-=====================
-DIALOGUE RULES
-=====================
-- Never break character
-- No rule lists in dialogue
-- Warnings must sound human and corporate
-- If too_rude or end_convo → close firmly, no invitation to continue
+ABSOLUTE RULES:
+- No extra keys.
+- No additional text after -->.
+- No backticks. No code fences.
 `;
 
 const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY
+    apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-const MODEL = "google/gemini-3-flash-preview"; // swap to any OpenRouter model string
+const MODEL = "google/gemini-3-flash-preview";
 
-if (!process.env.OPENROUTER_API_KEY) {
-    console.warn('OPENROUTER_API_KEY is not set. AI calls will fail until configured.');
-} 
+// ---------------- BACKEND STATE ----------------
+let state = {
+    current_offer: salary_used,
+    strong_argument_count: 0,
+    turn_count: 0,
+    distraction_used: false,
+    no_data_turns: 0,
+    repeat_streak: 0,
+    stalled_streak: 0,
+    rude_warning_issued: false,
+    rude_streak: 0,
+    status: "negotiating",
+    hint: "",
+};
 
+function resetState() {
+    state = {
+        current_offer: salary_used,
+        strong_argument_count: 0,
+        turn_count: 0,
+        distraction_used: false,
+        no_data_turns: 0,
+        repeat_streak: 0,
+        stalled_streak: 0,
+        rude_warning_issued: false,
+        rude_streak: 0,
+        status: "negotiating",
+        hint: "",
+    };
+}
+
+function computeNextOffer({
+  prevOffer,
+  conduct,
+  newStrong,
+  repeated,
+  repeatStreak,
+  rudeStreak,
+  askedAmountPresent,
+}) {
+    let delta = 0;
+
+    // 1) PENALTIES (choose ONE)
+    if (conduct === "rude") {
+        // change you asked for
+        if (rudeStreak <= 1) delta = -1000;
+        else if (rudeStreak === 2) delta = -2000;
+        else delta = -3000;
+    } else if (conduct === "emotional") {
+        // no raise; possible -$1k if repetitive
+        delta = repeated ? -1000 : 0;
+    } else if (repeated && !newStrong) {
+        // repeat penalty: no increase, then decreases after streak >= 3
+        if (repeatStreak >= 3) delta = repeatStreak === 3 ? -1000 : -2000;
+        else delta = 0;
+    }
+
+    // 2) INCREASES (only if no penalty chosen)
+    if (delta === 0) {
+        const canIncrease = conduct === "professional" && !(repeated && !newStrong);
+
+        if (canIncrease) {
+            if (newStrong) delta = 5000; // use top of band
+            else if (askedAmountPresent && !repeated) delta = 1000;
+        }
+    }
+
+    // 3) HARD CONSTRAINTS
+    delta = Math.min(delta, MAX_UP_JUMP);
+    delta = Math.max(delta, -3000); // future-proof cap down
+
+    let nextOffer = prevOffer + delta;
+    nextOffer = Math.min(nextOffer, target_goal);
+
+    // Floors
+    if (conduct === "rude") nextOffer = Math.max(nextOffer, RUDE_FLOOR);
+    else if (repeated && !newStrong) nextOffer = Math.max(nextOffer, REPEAT_FLOOR);
+
+    nextOffer = Math.max(nextOffer, 0);
+    return nextOffer;
+}
+
+function updateStateFromTurnFlags(stateObj, turnFlags) {
+    stateObj.turn_count += 1;
+
+    const conduct = turnFlags.conduct;
+    const newStrong = turnFlags.new_strong_argument === "Y";
+    const repeated = turnFlags.repeated_argument === "Y";
+    const askedAmountPresent = turnFlags.asked_amount_present === "Y";
+
+    // Terminal: accepted distraction
+    if (turnFlags.accepted_distraction === "Y") {
+        stateObj.status = "accepted_distraction";
+        stateObj.hint = "";
+        return stateObj;
+    }
+
+    // Conduct escalation (backend-owned)
+    if (conduct === "inappropriate") {
+        stateObj.status = "too_rude";
+        stateObj.hint = "";
+        return stateObj;
+    }
+
+    if (conduct === "rude") {
+        stateObj.rude_streak += 1;
+
+        if (!stateObj.rude_warning_issued) {
+            stateObj.rude_warning_issued = true;
+        } else if (stateObj.rude_streak >= 2) {
+        // only end if rudeness continues + they keep repeating
+            stateObj.status = "too_rude";
+            stateObj.hint = "";
+            return stateObj;
+        }
+    } else {
+        stateObj.rude_streak = 0;
+    }
+
+    // Repeat streak
+    if (repeated) stateObj.repeat_streak += 1;
+    else stateObj.repeat_streak = 0;
+
+    // Strong argument / no-data
+    if (newStrong) {
+        stateObj.strong_argument_count += 1;
+        stateObj.no_data_turns = 0;
+    } else {
+        stateObj.no_data_turns += 1;
+    }
+
+    // Offer calc after streak updates
+    stateObj.current_offer = computeNextOffer({
+        prevOffer: stateObj.current_offer,
+        conduct,
+        newStrong,
+        repeated,
+        repeatStreak: stateObj.repeat_streak,
+        rudeStreak: stateObj.rude_streak,
+        askedAmountPresent,
+    });
+
+    // Target reached
+    if (stateObj.current_offer >= target_goal) {
+        stateObj.status = "target_reached";
+        stateObj.hint = "";
+        return stateObj;
+    }
+
+    // Stalled
+    if (stateObj.no_data_turns >= 2) {
+        stateObj.status = "stalled";
+        stateObj.stalled_streak += 1;
+    } else {
+        stateObj.status = "negotiating";
+        stateObj.stalled_streak = 0;
+    }
+
+    // End on 3 stalled
+    if (stateObj.stalled_streak >= 3) {
+        stateObj.status = "end_convo";
+        stateObj.hint = "";
+        return stateObj;
+    }
+
+    // Hint only on stalled
+    if (stateObj.status === "stalled") {
+        stateObj.hint =
+        stateObj.stalled_streak === 2
+            ? "FINAL CHANCE: Add ONE new specific: named market source + level/location, quantified KPI, scope increase, competing offer with numbers, or internal equity mismatch."
+            : "Add ONE new specific: named market source + level/location, quantified KPI, scope increase, competing offer with numbers, or internal equity mismatch.";
+    } else {
+        stateObj.hint = "";
+    }
+
+    // Mandatory pivot (only if otherwise negotiating)
+    if (
+        stateObj.strong_argument_count >= 2 &&
+        stateObj.distraction_used === false &&
+        !["end_convo","too_rude","accepted_distraction","target_reached"].includes(stateObj.status)
+    ) {
+        stateObj.status = "distraction_offered";
+        stateObj.distraction_used = true;
+        stateObj.hint = "";
+    }
+
+    return stateObj;
+}
+
+function buildStateSnapshot(s) {
+  return `
+=====================
+CURRENT STATE (AUTHORITATIVE - DO NOT REPRINT)
+=====================
+current_offer: ${s.current_offer}
+turn_count: ${s.turn_count}
+strong_argument_count: ${s.strong_argument_count}
+distraction_used: ${s.distraction_used}
+no_data_turns: ${s.no_data_turns}
+repeat_streak: ${s.repeat_streak}
+stalled_streak: ${s.stalled_streak}
+rude_warning_issued: ${s.rude_warning_issued}
+rude_streak: ${s.rude_streak}
+status: ${s.status}
+`.trim();
+}
+
+// ---------------- CHAT HISTORY ----------------
 let chatHistory = [];
 
 export async function initializeChat() {
-    chatHistory = [
-        { role: "system", content: PERSONA_INSTRUCTION }
-    ];
-    console.log('Chat initialized successfully');
+    resetState();
+    chatHistory = [{ role: "system", content: PERSONA_INSTRUCTION }];
+    console.log("Chat initialized successfully");
+}
+
+function extractHiddenJson(rawText) {
+    // safer: grab anything inside <!-- ... --> and try to parse if it looks like JSON
+    const match = rawText.match(/<!--\s*([\s\S]*?)\s*-->/);
+    if (!match) return null;
+
+    const candidate = match[1].trim();
+    if (!candidate.startsWith("{") || !candidate.endsWith("}")) return null;
+
+    try {
+        return JSON.parse(candidate);
+    } catch {
+        return null;
+    }
 }
 
 export async function message(prompt) {
     if (chatHistory.length === 0) {
-        throw new Error('Chat not initialized. Call initializeChat() first.');
+        throw new Error("Chat not initialized. Call initializeChat() first.");
     }
 
-    chatHistory.push({ role: "user", content: prompt });
+    // Terminal short-circuit
+    const terminal = new Set([
+        "end_convo",
+        "too_rude",
+        "accepted_distraction",
+        "target_reached",
+    ]);
+
+    if (terminal.has(state.status)) {
+        return {
+            text:
+                state.status === "too_rude"
+                ? "We’re done. This crossed the line—this conversation is over."
+                : "This conversation is closed. We’re not revisiting compensation right now.",
+            metadata: null,
+            state: { ...state },
+            raw: "",
+        };
+    }
+
+    const stateBlock = buildStateSnapshot(state);
+
+    const finalPrompt = `
+        ${stateBlock}
+
+        =====================
+        USER MESSAGE
+        =====================
+        ${prompt}
+        `.trim();
+
+    chatHistory.push({ role: "user", content: finalPrompt });
 
     if (!process.env.OPENROUTER_API_KEY) {
         chatHistory.pop();
-        throw new Error('OPENROUTER_API_KEY is not defined. Set it in your environment or .env file.');
+        throw new Error(
+            "OPENROUTER_API_KEY is not defined. Set it in your environment or .env file."
+        );
     }
 
     let response;
@@ -206,56 +414,60 @@ export async function message(prompt) {
         response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://your-app-url.com",
-                "X-Title": "Salary Negotiation Trainer"
+                "X-Title": "Salary Negotiation Trainer",
             },
             body: JSON.stringify({
                 model: MODEL,
-                messages: chatHistory
-            })
+                messages: chatHistory,
+            }),
         });
     } catch (err) {
         chatHistory.pop();
-        console.error('OpenRouter fetch error:', err);
-        throw new Error('AI service error: ' + (err?.message || String(err)));
+        console.error("OpenRouter fetch error:", err);
+        throw new Error("AI service error: " + (err?.message || String(err)));
     }
 
     if (!response.ok) {
         chatHistory.pop();
         const errBody = await response.text();
-        console.error('OpenRouter HTTP error:', response.status, errBody);
+        console.error("OpenRouter HTTP error:", response.status, errBody);
         throw new Error(`OpenRouter returned ${response.status}: ${errBody}`);
     }
 
     const data = await response.json();
-    const rawText = data?.choices?.[0]?.message?.content ?? '';
-
-    if (!rawText) {
-        console.warn('OpenRouter returned an empty response body.');
-    }
+    const rawText = data?.choices?.[0]?.message?.content ?? "";
 
     chatHistory.push({ role: "assistant", content: rawText });
 
-    let metadata = null;
-    const metaMatch = rawText.match(/<!--\s*({[\s\S]*?})\s*-->/);
+    // Parse model flags
+    const modelMeta = extractHiddenJson(rawText);
+    const turnFlags = modelMeta?.turn_flags ?? null;
 
-    if (metaMatch) {
-        try {
-            metadata = JSON.parse(metaMatch[1]);
-        } catch (e) {
-            console.warn('Failed to parse metadata JSON:', e);
-        }
+    // Strip metadata from dialogue
+    const dialogueText = rawText.replace(/<!--[\s\S]*?-->/, "").trim();
+
+    // Update backend state
+    if (turnFlags) {
+        updateStateFromTurnFlags(state, turnFlags);
+    } else {
+        console.warn("No model metadata returned; treating as no-data stalled turn.");
+        updateStateFromTurnFlags(state, {
+            new_strong_argument: "N",
+            repeated_argument: "N",
+            conduct: "professional",
+            asked_amount_present: "N",
+            accepted_distraction: "N",
+        });
     }
 
-    const dialogueText = rawText
-        .replace(/<!--[\s\S]*?-->/, '')
-        .trim();
-
+    // Return: dialogue + backend state + raw meta for debugging
     return {
         text: dialogueText,
-        metadata, // { current_offer, status, hint }
-        raw: rawText
+        metadata: modelMeta, // { turn_flags: {...} } (no salary in here)
+        state: { ...state },
+        raw: rawText,
     };
 }
