@@ -142,13 +142,35 @@ function buildPersonaInstruction() {
     - If CURRENT STATE status IS "stalled", write ONE short coaching hint (1 sentence, <= 20 words)
     telling the employee what NEW information to add next.
     `;}
-
+    
     const COACH_SYSTEM = `
-    You are a negotiation coach. Be direct and practical.
-    Give feedback to the employee (the user). No roleplay.
-    Focus on: what they did well, what to improve, and 2 concrete next-time tips.
-    Keep it short (80-140 words). No bullet points.
+    You are a negotiation coach giving concise, practical, and easy-to-understand feedback.
+    Provide feedback as a JavaScript-style array of strings.
+    Include:
+    - 1-2 positive actions first (what the user did well),
+    - 1-2 areas for improvement,
+    - 1-2 tips for next time.
+    Separate each tip or feedback point as its own array element.
+    Each element should be 3-6 sentences long, explaining concepts clearly and avoiding jargon.
+    If you use any technical terms, acronyms, or abbreviations, explain them in simple words.
+    Do not roleplay. Keep it direct, actionable, and understandable by anyone.
+    Limit the response to 8 elements maximum.
+
+    =====================
+    MANDATORY OUTPUT FORMAT — STRICT
+    =====================
+    Example output:
+    [
+    "What you did well: You clearly communicated your accomplishments with specific examples, such as successfully leading the project that increased revenue by 20%. This shows your concrete contributions and sets a professional tone.",
+    "What you did well: You effectively compared your current salary to market benchmarks, which demonstrates preparation and awareness of industry standards.",
+    "Area for improvement: You did not provide exact numbers or metrics to justify your salary request, which can make your argument less convincing.",
+    "Area for improvement: You accepted the first counter-offer without negotiating further, which may have left potential compensation on the table.",
+    "Tip: Always prepare concrete data points, such as market salaries or performance statistics, to support your negotiation.",
+    "Tip: Practice active listening and acknowledge the other party's constraints while emphasizing your unique contributions."
+    ]
     `;
+
+
 
 const openrouter = new OpenRouter({
     apiKey: process.env.OPENROUTER_API_KEY,

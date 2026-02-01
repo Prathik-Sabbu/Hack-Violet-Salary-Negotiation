@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
+import { sendChatMessage } from '../services/apiClient'
+
 
 function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outcome }) {
   const [isAnimating, setIsAnimating] = useState(true)
+  const [aiFeedback, setAiFeedback] = useState({
+  pros: [],
+  mistakes: [],
+  tips: []
+});
+  const [isLoading, setIsLoading] = useState(false);
+
   
   const salaryIncrease = currentOffer - (playerData?.currentSalary || 0)
   const increasePercent = playerData?.currentSalary
@@ -14,25 +23,31 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
     return () => clearTimeout(timer)
   }, [])
 
-  // Placeholder data - will be replaced with actual analysis
-  const mistakes = [
-    "Did not provide specific data or metrics to support salary request",
-    "Accepted first counter-offer without further negotiation",
-    "Failed to mention market research or comparable salaries",
-    "Got distracted by alternative benefits instead of focusing on base salary",
-    "Used emotional language instead of professional, data-driven arguments"
-  ]
+  useEffect(() => {
+    const fetchAiFeedback = async () => {
+      setIsLoading(true);
+      try {
+        const response = await sendChatMessage('give tips');
+        // response is { text, metadata, raw }; text is a JSON string of an array
+        const text = response?.text ?? '';
+        const items = typeof text === 'string' ? JSON.parse(text) : text;
+        const arr = Array.isArray(items) ? items : [String(text || '')];
 
-  const tips = [
-    "Always research market rates for your role before negotiating",
-    "Use specific numbers and data points to justify your ask",
-    "Practice active listening and acknowledge the other party's constraints",
-    "Be prepared to walk away if the offer doesn't meet your minimum requirements",
-    "Consider the total compensation package, not just base salary",
-    "Build rapport before making demands - start with gratitude",
-    "Use silence strategically after stating your position",
-    "Have 2-3 concrete achievements ready to cite as evidence of your value"
-  ]
+        setAiFeedback({
+          pros: arr.filter(p => String(p).toLowerCase().includes('what you did well:')),
+          mistakes: arr.filter(p => String(p).toLowerCase().includes('area for improvement:')),
+          tips: arr.filter(p => String(p).toLowerCase().includes('tip:')),
+        });
+      } catch (error) {
+        console.error('Error fetching AI tips:', error);
+        setAiFeedback({ pros: [], mistakes: [], tips: [] });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAiFeedback();
+  }, []);
 
   return (
     <div className="fixed inset-0 flex items-end justify-center z-50 p-0">
@@ -119,20 +134,16 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
             {/* Divider */}
             <div className="border-t-4 border-gray-400 my-6"></div>
 
-            {/* Mistakes Section */}
+            {/* What You Did Well */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                ❌ Areas for Improvement
+              <h3 className="text-xl font-bold text-blue-700 mb-4">
+                ✅ What You Did Well
               </h3>
               <div className="space-y-3">
-                {mistakes.map((mistake, index) => (
+                {(isLoading ? ['Loading...'] : aiFeedback.pros).map((pro, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold mt-1" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                      {index + 1}.
-                    </span>
-                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                      {mistake}
-                    </p>
+                    <span className="text-blue-600 font-bold mt-1">{index + 1}.</span>
+                    <p className="text-gray-800 leading-relaxed">{pro}</p>
                   </div>
                 ))}
               </div>
@@ -141,20 +152,32 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
             {/* Divider */}
             <div className="border-t-4 border-gray-400 my-6"></div>
 
-            {/* Tips Section */}
+            {/* Areas for Improvement */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-green-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                💡 Tips for Next Time
+              <h3 className="text-xl font-bold text-red-700 mb-4">
+                ❌ Areas for Improvement
               </h3>
               <div className="space-y-3">
-                {tips.map((tip, index) => (
+                {(isLoading ? ['Loading...'] : aiFeedback.mistakes).map((mistake, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <span className="text-green-600 font-bold mt-1" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                      •
-                    </span>
-                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                      {tip}
-                    </p>
+                    <span className="text-red-600 font-bold mt-1">{index + 1}.</span>
+                    <p className="text-gray-800 leading-relaxed">{mistake}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t-4 border-gray-400 my-6"></div>
+
+            {/* Tips */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-green-700 mb-4">💡 Tips for Next Time</h3>
+              <div className="space-y-3">
+                {(isLoading ? ['Loading...'] : aiFeedback.tips).map((tip, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <span className="text-green-600 font-bold mt-1">•</span>
+                    <p className="text-gray-800 leading-relaxed">{tip}</p>
                   </div>
                 ))}
               </div>
