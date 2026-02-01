@@ -411,21 +411,22 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd, s
       {/* Floating offer change animation */}
       <OfferChange delta={offerDelta} trigger={animationTrigger} />
 
-      {/* Bottom-left button to reopen brief */}
-      <button
-        onClick={() => setShowBrief(true)}
-        className="absolute bottom-4 left-4 z-30 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-colors"
-      >
-        <span>📋</span>
-        <span className="text-sm font-medium">Brief</span>
-      </button>
+      {/* Left side button to reopen brief - pixel notebook */}
+      <div className="absolute z-30" style={{ bottom: '280px', left: '16px' }}>
+        <button
+          onClick={() => setShowBrief(true)}
+          className="notebook-btn"
+          title="View Brief"
+          aria-label="View Brief"
+        />
+      </div>
 
       {/* Top-left button for new settings */}
       <button
         onClick={onNewSettings}
-        className="absolute top-4 left-4 z-30 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg transition-colors"
+        className="absolute top-4 left-4 z-30 new-game-btn"
       >
-        <span className="text-sm font-medium">New Game</span>
+        New Game
       </button>
 
       {/* Dialogue box */}
