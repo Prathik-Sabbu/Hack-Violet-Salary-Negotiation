@@ -3,6 +3,7 @@ import TextArea from './TextArea'
 import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
+import PixelWindow from './PixelWindow'
 import './NegotiationScreen.css'
 import { initializeChat, sendChatMessage } from '../services/apiClient'
 
@@ -231,10 +232,10 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
 
     return (
       <div className="game-container relative flex items-center justify-center p-4">
-        {/* Shlok background */}
+        {/* Background - same as main game screen */}
         <img
-          src="/shlok_1.png"
-          alt="Shlok's Office"
+          src="/background.png"
+          alt="Office Background"
           className="absolute inset-0 w-full h-full object-cover pixel-art"
         />
         {/* Overlay for readability */}
@@ -284,7 +285,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
       {/* Background layer - separate from character */}
       <div className="absolute inset-0">
         <img
-          src="/your-background.png"
+          src="background.png"
           alt="Office Background"
           className="background"
         />
@@ -297,6 +298,11 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
           alt="shlok"
           className="character"
         />
+      </div>
+
+      {/* Pixel Window - positioned top-right with larger margins */}
+      <div className="absolute top-24 right-24 z-20">
+        <PixelWindow />
       </div>
 
       {/* Bottom-left button to reopen brief */}
