@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import salaryroutes from './routes/salaryRoutes.js';
 import { initializeChat } from './services/chatService.js';
-import messageroute from './routes/chatRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 const PORT = 3001;
@@ -26,7 +26,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/salary', salaryroutes);
-app.use('/api/chat', messageroute);
+app.use('/api/chat', chatRoutes);
 
 // Start server
 app.listen(PORT, async () => {
@@ -35,11 +35,4 @@ app.listen(PORT, async () => {
   console.log(`   GET  http://localhost:${PORT}/api/salary?job=Software%20Engineer`);
   console.log(`   POST http://localhost:${PORT}/api/salary/calculate`);
   
-  // Initialize chat on server startup (don't let failures crash the server)
-  try {
-    await initializeChat();
-  } catch (err) {
-    console.error('Failed to initialize chat on startup:', err);
-    console.warn('The server is running but AI features may be unavailable.');
-  }
 });

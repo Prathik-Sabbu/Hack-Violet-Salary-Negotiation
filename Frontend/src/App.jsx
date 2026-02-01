@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import SetupScreen from './components/SetupScreen'
 import NegotiationScreen from './components/NegotiationScreen'
-import { initializeChat } from './services/apiClient'
 
 // LocalStorage key for persisting player data
 const STORAGE_KEY = 'negotiation_player_data'
@@ -58,14 +57,8 @@ function App() {
     return getSavedPlayerData()
   })
 
-  // Reset backend chat on mount if we have existing player data (page reload case)
-  useEffect(() => {
-    if (playerData && gamePhase === 'negotiation') {
-      initializeChat().catch(err => {
-        console.error('Failed to initialize chat on reload:', err)
-      })
-    }
-  }, []) // Only run on mount
+  // Chat is initialized when the user submits the Pre-Negotiation Brief with their target goal
+  // (no early init — we need startingSalary, jobTitle, marketAverage, targetGoal)
 
   const handleSetupComplete = (data) => {
     console.log('Setup complete! Player data:', data)

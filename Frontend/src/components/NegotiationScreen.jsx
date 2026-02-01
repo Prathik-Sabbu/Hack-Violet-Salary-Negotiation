@@ -4,7 +4,7 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
 import './NegotiationScreen.css'
-import { initializeChat, sendChatMessage } from '../services/apiClient'
+import { sendChatMessage } from '../services/apiClient'
 
 function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
@@ -191,39 +191,22 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     }
   }
 
-  const handlePlayAgain = async () => {
-  // Reset game state
-  setGameState('shlok_speaking')
-  setPlayerMessage('')
-  setDialogue([])
-  setCurrentShlokText('')
-  setTextIndex(0)
-  setCurrentRound(0)
-  setIsLoading(false)
-  setShowBrief(true)
-  setCurrentOffer(playerData?.currentSalary || 0)
-  setNegotiationStatus('negotiating')
-  setHint('')
-  
-  // Reset backend chat
-  try {
-    await initializeChat()
-  } catch (err) {
-    console.error('Failed to initialize chat:', err)
+  const handlePlayAgain = () => {
+    // Reset game state; brief will show and user must enter target goal again
+    setGameState('shlok_speaking')
+    setPlayerMessage('')
+    setDialogue([])
+    setCurrentShlokText('')
+    setTextIndex(0)
+    setCurrentRound(0)
+    setIsLoading(false)
+    setShowBrief(true)
+    setCurrentOffer(playerData?.currentSalary || 0)
+    setNegotiationStatus('negotiating')
+    setHint('')
+    // Chat is re-initialized when user submits the Pre-Negotiation Brief
   }
-}
 
-  useEffect(() => {
-    if (gameState === 'complete') {
-      (async () => {
-        try {
-          await initializeChat()
-        } catch (err) {
-          console.error('Failed to initialize chat:', err)
-        }
-      })()
-    }
-  }, [gameState])
 
   // Negotiation complete screen
   if (gameState === 'complete') {
