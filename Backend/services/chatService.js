@@ -492,9 +492,6 @@ async function generateCoachFeedback({ outcome, finalOffer, recentTurns }) {
 }
 
 function terminalMessage(status) {
-    if (status === "end_convo") {
-        return "This conversation isn’t moving forward—without new, specific data we’re done here. The chat has ended.";
-    }
     if (status === "too_rude") {
         return "Your behavior isn’t appropriate for a professional discussion. I’m stopping this chat now.";
     }
@@ -515,7 +512,7 @@ export async function message(prompt) {
     ]);
 
     if (terminal.has(state.status)) {
-        if (state.status === "end_convo" || state.status === "too_rude") {
+        if (state.status === "too_rude") {
             return {
                 text: terminalMessage(state.status),
                 metadata: null,

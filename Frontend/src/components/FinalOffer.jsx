@@ -11,11 +11,11 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const isEarlyEnd = ['too_rude', 'end_convo'].includes(outcome?.status);
-  const showTips = !isEarlyEnd;
+  const isEarlyEndForResults = ['too_rude', 'end_convo'].includes(outcome?.status);
+  const showTips = outcome?.status !== 'too_rude';
 
   const salaryIncrease = currentOffer - (playerData?.currentSalary || 0)
-  const increasePercent = isEarlyEnd ? 0 : (
+  const increasePercent = isEarlyEndForResults ? 0 : (
     playerData?.currentSalary
       ? ((salaryIncrease / playerData.currentSalary) * 100).toFixed(1)
       : 0
@@ -85,13 +85,13 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
             {/* Header with outcome */}
             <div className="mb-8 mt-12 flex flex-col items-center justify-center text-center">
                 <h2
-                className={`text-5xl font-bold ${showTips ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
+                className={`text-5xl font-bold ${showTips && !isEarlyEndForResults ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
                 style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '3.5rem' }}
                 >
                 {outcome?.title || 'Negotiation Complete'}
                 </h2>
 
-    {showTips && (
+    {showTips && !isEarlyEndForResults && (
       <p
         className="text-gray-600 text-lg mb-6"
         style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}
@@ -116,8 +116,8 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Final Offer:</span>
-                  <span className={`text-2xl font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.75rem' }}>
-                    {isEarlyEnd ? 'Incomplete Offer' : `$${currentOffer.toLocaleString()}`}
+                  <span className={`text-2xl font-bold ${isEarlyEndForResults ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.75rem' }}>
+                    {isEarlyEndForResults ? 'Incomplete Offer' : `$${currentOffer.toLocaleString()}`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -128,9 +128,9 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 flex justify-between items-center">
                   <span className="text-lg text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '1.375rem' }}>Increase:</span>
-                  <span className={`text-3xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '2.125rem' }}>
-                    {isEarlyEnd ? '0%' : `${salaryIncrease >= 0 ? '+' : ''}${increasePercent}%`}
-                    {!isEarlyEnd && (
+                  <span className={`text-3xl font-bold ${isEarlyEndForResults ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace', fontSize: '2.125rem' }}>
+                    {isEarlyEndForResults ? '0%' : `${salaryIncrease >= 0 ? '+' : ''}${increasePercent}%`}
+                    {!isEarlyEndForResults && (
                       <span className="text-lg font-normal ml-1">
                         (${salaryIncrease >= 0 ? '+' : ''}{salaryIncrease.toLocaleString()})
                       </span>
@@ -140,12 +140,26 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
               </div>
             </div>
 
-            {showTips ? (
+            {outcome?.status === 'too_rude' ? (
+              /* Minimal view for too_rude only */
               <>
-                {/* Divider */}
+                <div className="border-t-4 border-gray-400 my-6"></div>
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontSize: '1.5rem' }}>
+                    ❌ Areas for Improvement
+                  </h3>
+                  <div className="space-y-3">
+                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+                      The conversation ended due to unprofessional conduct.
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Full AI tips for end_convo, target_reached, etc. */
+              <>
                 <div className="border-t-4 border-gray-400 my-6"></div>
 
-                {/* What You Did Well */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontSize: '1.5rem' }}>
                     ✅ What You Did Well
@@ -160,10 +174,8 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t-4 border-gray-400 my-6"></div>
 
-                {/* Areas for Improvement */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontSize: '1.5rem' }}>
                     ❌ Areas for Improvement
@@ -178,10 +190,8 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                   </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t-4 border-gray-400 my-6"></div>
 
-                {/* Tips */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-green-700 mb-4" style={{ fontSize: '1.5rem' }}>💡 Tips for Next Time</h3>
                   <div className="space-y-3">
@@ -191,23 +201,6 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                         <p className="text-gray-800 leading-relaxed">{tip}</p>
                       </div>
                     ))}
-                  </div>
-                </div>
-              </>
-            ) : (
-              /* Areas for Improvement for too_rude / end_convo */
-              <>
-                <div className="border-t-4 border-gray-400 my-6"></div>
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-red-700 mb-4" style={{ fontSize: '1.5rem' }}>
-                    ❌ Areas for Improvement
-                  </h3>
-                  <div className="space-y-3">
-                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
-                      {outcome?.status === 'too_rude'
-                        ? 'The conversation ended due to unprofessional conduct.'
-                        : "You didn't make meaningful points and caused the conversation to end early."}
-                    </p>
                   </div>
                 </div>
               </>
