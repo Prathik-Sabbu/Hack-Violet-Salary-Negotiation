@@ -69,7 +69,7 @@ function InstructionScreen({ onClose }) {
               </h3>
               <div className="bg-white/80 rounded-lg p-4">
                 <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
-                  You're about to negotiate your salary with Shlok, the hiring manager. Known by your co-workers as a fast-moving manager who hides behind “policy,” budgets, and subtle double standards to keep people like you paid as little as possible. Your goal is to secure the wage you deserve through strategic conversation, data-driven arguments, and professional communication. Know your worth!
+                  You’re about to negotiate your salary with Shlok, the hiring manager. As a female employee, you’ll face a fast-moving manager who hides behind “policy,” budgets, and subtle double standards to justify keeping your pay low. Your goal is to secure the wage you deserve through strategic conversation, data-driven arguments, and professional communication. Know your worth!
                 </p>
               </div>
             </div>
