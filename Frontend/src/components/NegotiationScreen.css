@@ -1,9 +1,28 @@
 /* NegotiationScreen styles */
 
-.character {
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-  /* Debug: uncomment to see image bounds */
-  /* border: 2px solid red; */
+/* Background layer - fills entire screen */
+.background {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
+
+/* Character - positioned as sprite, not background */
+.character {
+  max-height: 80vh; /* Take up most of screen height */
+  max-width: 50vw;  /* Don't make character too wide */
+  object-fit: contain; /* Keep character proportions */
+  image-rendering: pixelated; /* Crisp pixel art */
+  image-rendering: crisp-edges;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .character {
+    max-height: 60vh;
+    max-width: 80vw;
+  }
+}
+
+
