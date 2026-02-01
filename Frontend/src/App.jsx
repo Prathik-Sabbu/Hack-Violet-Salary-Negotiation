@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import SetupScreen from './components/SetupScreen'
 import NegotiationScreen from './components/NegotiationScreen'
+import { initializeChat } from './services/apiClient'
 
+// LocalStorage key for persisting player data
 const STORAGE_KEY = 'negotiation_player_data'
 
 // Mock data for dev mode - skip setup with ?skip in URL
@@ -18,48 +20,68 @@ const DEV_PLAYER_DATA = {
   ]
 }
 
-// Load saved player data from localStorage
-const loadSavedData = () => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : null
-  } catch {
-    return null
-  }
-}
-
 function App() {
   // Check for ?skip in URL to skip setup screen
   const skipSetup = new URLSearchParams(window.location.search).has('skip')
-  const savedData = loadSavedData()
+
+  // Try to restore player data from localStorage
+  // In dev mode, always start fresh unless ?resume is in URL
+  const getSavedPlayerData = () => {
+    // In development, skip localStorage unless explicitly requested
+    if (import.meta.env.DEV && !new URLSearchParams(window.location.search).has('resume')) {
+      return null
+    }
+    
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  }
 
   // Game phases: 'setup' → 'negotiation' (brief is now a modal inside negotiation)
   const [gamePhase, setGamePhase] = useState(() => {
     if (skipSetup) return 'negotiation'
+    // Check if we have saved player data to resume
+    const savedData = getSavedPlayerData()
     if (savedData) return 'negotiation'
     return 'setup'
   })
   const [playerData, setPlayerData] = useState(() => {
     if (skipSetup) return DEV_PLAYER_DATA
-    if (savedData) return savedData
-    return null
+    // Restore from localStorage if available
+    return getSavedPlayerData()
   })
 
-  // Save playerData to localStorage when it changes
+  // Reset backend chat on mount if we have existing player data (page reload case)
   useEffect(() => {
-    if (playerData) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(playerData))
+    if (playerData && gamePhase === 'negotiation') {
+      initializeChat().catch(err => {
+        console.error('Failed to initialize chat on reload:', err)
+      })
     }
-  }, [playerData])
+  }, []) // Only run on mount
 
   const handleSetupComplete = (data) => {
     console.log('Setup complete! Player data:', data)
+    // Save to localStorage for reload persistence
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch (err) {
+      console.error('Failed to save player data to localStorage:', err)
+    }
     setPlayerData(data)
     setGamePhase('negotiation')
   }
 
   const handleNewSettings = () => {
-    localStorage.removeItem(STORAGE_KEY)
+    // Clear saved data when starting fresh
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (err) {
+      console.error('Failed to clear localStorage:', err)
+    }
     setPlayerData(null)
     setGamePhase('setup')
   }

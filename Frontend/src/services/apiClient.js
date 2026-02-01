@@ -98,17 +98,3 @@ export async function sendChatMessage(prompt) {
   }
 }
 
-export async function initializeChat() {
-  try{
-    const response = await fetch(`${API_BASE_URL}/chat/intialize`)
-
-    if (response.status === 200) {
-      console.log("YAAAAAAAAAAAAAAY");
-    }
-    
-  }
-  catch (error) {
-      console.error('Not initialized:', error);
-      throw error;
-  }
-}
