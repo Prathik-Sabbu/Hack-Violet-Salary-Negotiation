@@ -3,7 +3,6 @@ import TextArea from './TextArea'
 import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import FinalOffer from './FinalOffer'
-import PixelWindow from './PixelWindow'
 import './NegotiationScreen.css'
 import { initializeChat, sendChatMessage } from '../services/apiClient'
 
@@ -300,10 +299,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         />
       </div>
 
-      {/* Pixel Window - positioned top-right with larger margins */}
-      <div className="absolute top-24 right-24 z-20">
-        <PixelWindow />
-      </div>
+      {/* Current offer display - top center */}
+      {currentOffer > 0 && (
+        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-30 bg-green-50 border-4 border-green-600 rounded-lg px-6 py-3">
+          <span className="text-green-700 text-lg font-medium" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
+            Current Offer: ${currentOffer.toLocaleString()}
+          </span>
+        </div>
+      )}
 
       {/* Bottom-left button to reopen brief */}
       <button
@@ -337,15 +340,6 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
               <p className="text-yellow-800 text-sm">
                 <span className="font-bold">💡 Hint:</span> {hint}
               </p>
-            </div>
-          )}
-
-          {/* Current offer display */}
-          {currentOffer > 0 && (
-            <div className="bg-green-100 border-2 border-green-400 rounded-lg px-4 py-2 mb-4 inline-block">
-              <span className="text-green-800 text-sm font-medium">
-                Current Offer: ${currentOffer.toLocaleString()}
-              </span>
             </div>
           )}
 
