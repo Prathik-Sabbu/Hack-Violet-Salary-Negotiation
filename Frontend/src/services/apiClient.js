@@ -48,26 +48,20 @@ export async function calculateTargetSalary(marketRate, achievements, currentSal
  * Initialize/reset the chat session on the backend
  * Call this when starting a new negotiation or playing again
  */
-export async function initializeChat() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/chat/initialize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+export async function initializeChat(payload) {
+  const res = await fetch(`${API_BASE_URL}/chat/initialize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 
-    if (!response.ok) {
-      throw new Error('Failed to initialize chat');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
+  if (!res.ok) {
+    throw new Error('Chat initialization failed');
   }
+
+  return res.json();
 }
+
 
 /**
  * Send a chat message to the AI negotiation manager
@@ -97,4 +91,25 @@ export async function sendChatMessage(prompt) {
     throw error;
   }
 }
+
+export async function sendData(currentSalary, jobTitle, targetgoal){
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ currentSalary, jobTitle, targetgoal }),
+    });
+
+    if (!response.ok) {
+      throw new Error('could not send initialization data');
+    }
+
+  }catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
 
