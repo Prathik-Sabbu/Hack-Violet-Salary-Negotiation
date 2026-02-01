@@ -31,6 +31,9 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
   const [offerBoxPulse, setOfferBoxPulse] = useState('')
   const prevOfferRef = useRef(currentOffer)
 
+  // Disappointed state - when negative indicators outweigh positive
+  const [isDisappointed, setIsDisappointed] = useState(false)
+
   const MAX_ROUNDS = 5
 
   // Terminal statuses that end the negotiation
@@ -73,6 +76,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
         } else {
           setHint('')
         }
+
+        // Calculate if Shlok should look disappointed
+        // Disappointed when negative indicators outweigh positive ones
+        const negativeScore = (response.state.rude_streak || 0) +
+                              (response.state.no_data_turns || 0) +
+                              (response.state.repeat_streak || 0)
+        const positiveScore = response.state.strong_argument_count || 0
+        setIsDisappointed(negativeScore > positiveScore)
       }
 
       setIsLoading(false)
@@ -230,6 +241,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
     setAnimationTrigger(0)
     setOfferBoxPulse('')
     prevOfferRef.current = playerData?.currentSalary || 0
+    setIsDisappointed(false)
     // Chat is re-initialized when user submits the Pre-Negotiation Brief
   }
 
@@ -284,7 +296,10 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd })
       {/* Character layer - positioned on top of background */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img
-          src={isTextAnimating ? '/shlok_idle_mouth_open.png' : '/shlok_idle_mouth_closed.png'}
+          src={isDisappointed
+            ? (isTextAnimating ? '/shlok_disappointed_mouth_open.png' : '/shlok_disappointed_mouth_closed.png')
+            : (isTextAnimating ? '/shlok_idle_mouth_open.png' : '/shlok_idle_mouth_closed.png')
+          }
           alt="shlok"
           className="character"
         />
