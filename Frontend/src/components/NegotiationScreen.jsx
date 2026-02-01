@@ -31,7 +31,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   const TERMINAL_STATUSES = ['accepted_distraction', 'target_reached', 'too_rude', 'end_convo']
 
   // Opening message for Shlok (round 0)
-  const OPENING_MESSAGE = `Ah, ${playerData?.jobTitle || 'there'}! [THIS IS PLACEHOLDER] Come in, come in. Have a seat. So, I've been looking over your file... You wanted to discuss your compensation. Why are you here?`
+  const OPENING_MESSAGE = `Ah, hello ${playerData?.jobTitle || 'there'}! Why are you here?`
 
   // Get Shlok's response from the AI backend
   const getShlokResponse = async (playerInput) => {
@@ -87,7 +87,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         const timer = setTimeout(() => {
           setCurrentShlokText(prev => prev + OPENING_MESSAGE[textIndex])
           setTextIndex(prev => prev + 1)
-        }, 30)
+        }, 15)
         return () => clearTimeout(timer)
       } else if (textIndex >= OPENING_MESSAGE.length) {
         // Opening finished
@@ -117,7 +117,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         const timer = setTimeout(() => {
           setCurrentShlokText(prev => prev + fullResponseText[textIndex])
           setTextIndex(prev => prev + 1)
-        }, 30)
+        }, 15)
         return () => clearTimeout(timer)
       } else if (textIndex >= fullResponseText.length) {
         // Animation finished
@@ -263,7 +263,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
               onClick={onNewSettings}
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
             >
-              New Settings
+              New Game
             </button>
           </div>
         </div>
@@ -319,7 +319,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
         onClick={onNewSettings}
         className="absolute top-4 left-4 z-30 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg transition-colors"
       >
-        <span className="text-sm font-medium">New Settings</span>
+        <span className="text-sm font-medium">New Game</span>
       </button>
 
       {/* Dialogue box */}
