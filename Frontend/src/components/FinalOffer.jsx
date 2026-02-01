@@ -86,7 +86,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
             <div className="mb-8 mt-12 flex flex-col items-center justify-center text-center">
                 <h2
                 className={`text-3xl font-bold ${showTips ? 'mb-2' : 'mb-6'} ${outcome?.color || 'text-gray-900'}`}
-                style={{ fontFamily: 'Stardew Valley, monospace' }}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
                 >
                 {outcome?.title || 'Negotiation Complete'}
                 </h2>
@@ -94,7 +94,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
     {showTips && (
       <p
         className="text-gray-600 text-sm mb-6"
-        style={{ fontFamily: 'Stardew Valley, monospace' }}
+        style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
       >
         {outcome?.message || 'Review your results'}
       </p>
@@ -104,31 +104,31 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
 
             {/* Salary Comparison Section */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+              <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                 💰 Final Results
               </h3>
               <div className="bg-white/80 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Starting Salary:</span>
-                  <span className="text-lg font-bold" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Starting Salary:</span>
+                  <span className="text-lg font-bold" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                     ${(playerData?.currentSalary || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Final Offer:</span>
-                  <span className={`text-lg font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Final Offer:</span>
+                  <span className={`text-lg font-bold ${isEarlyEnd ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                     {isEarlyEnd ? 'Incomplete Offer' : `$${currentOffer.toLocaleString()}`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Target Range:</span>
-                  <span className="text-sm font-medium" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Target Range:</span>
+                  <span className="text-sm font-medium" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                     ${(playerData?.salaryRange?.[0] || 0).toLocaleString()} - ${(playerData?.salaryRange?.[1] || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 flex justify-between items-center">
-                  <span className="text-sm text-gray-600" style={{ fontFamily: 'Stardew Valley, monospace' }}>Increase:</span>
-                  <span className={`text-xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                  <span className="text-sm text-gray-600" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Increase:</span>
+                  <span className={`text-xl font-bold ${isEarlyEnd ? 'text-red-600' : salaryIncrease > 0 ? 'text-green-600' : salaryIncrease < 0 ? 'text-red-600' : 'text-gray-600'}`} style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                     {isEarlyEnd ? '0%' : `${salaryIncrease >= 0 ? '+' : ''}${increasePercent}%`}
                     {!isEarlyEnd && (
                       <span className="text-sm font-normal ml-1">
@@ -203,7 +203,7 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
                     ❌ Areas for Improvement
                   </h3>
                   <div className="space-y-3">
-                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                       {outcome?.status === 'too_rude'
                         ? 'The conversation ended due to unprofessional conduct.'
                         : "You didn't make meaningful points and caused the conversation to end early."}
@@ -218,14 +218,14 @@ function FinalOffer({ playerData, currentOffer, onPlayAgain, onNewSettings, outc
               <button
                 onClick={onPlayAgain}
                 className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 border-4 border-purple-800 shadow-lg transition-colors"
-                style={{ fontFamily: 'Stardew Valley, monospace', imageRendering: 'pixelated' }}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace', imageRendering: 'pixelated' }}
               >
                 Play Again
               </button>
               <button
                 onClick={onNewSettings}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 border-4 border-gray-800 shadow-lg transition-colors"
-                style={{ fontFamily: 'Stardew Valley, monospace', imageRendering: 'pixelated' }}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace', imageRendering: 'pixelated' }}
               >
                 New Settings
               </button>

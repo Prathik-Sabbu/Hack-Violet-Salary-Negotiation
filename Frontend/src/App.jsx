@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Home from './components/Home'
 import SetupScreen from './components/SetupScreen'
 import NegotiationScreen from './components/NegotiationScreen'
 
@@ -44,13 +45,11 @@ function App() {
     }
   }
 
-  // Game phases: 'setup' → 'negotiation' (brief is now a modal inside negotiation)
+  // Game phases: 'home' → 'setup' → 'negotiation'
   const [gamePhase, setGamePhase] = useState(() => {
     if (skipSetup || showEndScreen) return 'negotiation'
-    // Check if we have saved player data to resume
-    const savedData = getSavedPlayerData()
-    if (savedData) return 'negotiation'
-    return 'setup'
+    // Always start at home unless using dev shortcuts
+    return 'home'
   })
 
   const [playerData, setPlayerData] = useState(() => {
@@ -85,12 +84,43 @@ function App() {
     setGamePhase('setup')
   }
 
+  const handleStartGame = () => {
+    const savedData = getSavedPlayerData()
+    if (savedData) {
+      // Resume with saved data
+      setPlayerData(savedData)
+      setGamePhase('negotiation')
+    } else {
+      // No saved data, go to setup
+      setGamePhase('setup')
+    }
+  }
+
+  const handleNewGame = () => {
+    // Clear saved data and start fresh
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (err) {
+      console.error('Failed to clear localStorage:', err)
+    }
+    setPlayerData(null)
+    setGamePhase('setup')
+  }
+
   const handleNegotiationComplete = (result) => {
     console.log('Negotiation complete!', result)
   }
 
   return (
     <>
+      {gamePhase === 'home' && (
+        <Home 
+          onStartGame={handleStartGame}
+          onNewGame={handleNewGame}
+          hasSavedData={!!getSavedPlayerData()}
+        />
+      )}
+
       {gamePhase === 'setup' && (
         <SetupScreen onComplete={handleSetupComplete} />
       )}

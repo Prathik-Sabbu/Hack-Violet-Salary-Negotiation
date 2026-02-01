@@ -79,6 +79,43 @@
     inset 0 0 0 2px #f5f5dc;
 }
 
+/* Information icon button */
+.info-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  background: #fffef0;
+  border: 4px solid #333;
+  border-radius: 50%;
+  box-shadow: 4px 4px 0 #333;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+}
+
+.info-icon {
+  font-family: 'vt323-regular-webfont', monospace;
+  font-size: 2rem;
+  color: #000000;
+  font-weight: bold;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+.info-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #333;
+  background: #fff;
+}
+
+.info-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #333;
+}
+
 /* New Game button - pixel style */
 .new-game-btn {
   font-family: 'vt323-regular-webfont', monospace;

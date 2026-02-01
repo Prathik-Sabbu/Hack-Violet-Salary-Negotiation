@@ -73,7 +73,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-        <div className="bg-yellow-50 border-8 border-gray-800 p-8">
+        <div className="bg-yellow-50 border-8 border-gray-800 p-8" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
           Calculating your target salary...
         </div>
       </div>
@@ -83,7 +83,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
   if (!targetData) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-        <div className="bg-yellow-50 border-8 border-gray-800 p-8 text-red-700">
+        <div className="bg-yellow-50 border-8 border-gray-800 p-8 text-red-700" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
           Error calculating salary.
         </div>
       </div>
@@ -125,16 +125,16 @@ function PreNegotiationBrief({ playerData, onClose }) {
           <div className="relative z-10 pl-12">
           {/* Header */}
           <div className="text-center mb-6 border-b-4 border-gray-800 pb-4 mt-12">
-            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
               Pre-Negotiation Brief
             </h1>
-            <p className="text-sm text-gray-700" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+            <p className="text-sm text-gray-700" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
               Know your worth before you negotiate
             </p>
           </div>
 
           {/* Salary Cards */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="grid md:grid-cols-3 gap-4 mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             <div className="bg-white border-4 border-gray-800 p-4 text-center">
               <p className="text-sm">Your Current Salary</p>
               <p className="text-xl font-bold">{formatCurrency(playerData.currentSalary)}</p>
@@ -171,7 +171,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
                     </div>
                     <hr className="border-gray-700" />
                     <div className="flex justify-between font-bold">
-                      <span>Target</span>
+                      <span>Estimated Target</span>
                       <span>{formatCurrency(targetData.calculation.targetSalary)}</span>
                     </div>
                   </div>
@@ -182,7 +182,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
 
           {/* Achievements */}
           {playerData.achievements.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
               <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">Your Achievements</h3>
               <div className="bg-white border-4 border-gray-800 p-4">
                 <ul className="space-y-2">
@@ -202,7 +202,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
           )}
 
           {/* Profile */}
-          <div className="mb-6">
+          <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">Your Profile</h3>
             <div className="bg-white border-4 border-gray-800 p-4 grid grid-cols-2 gap-4 text-sm">
               <div><strong>Experience:</strong> {playerData.experienceLevel}</div>
@@ -211,7 +211,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
           </div>
 
           {/* Quick Tips */}
-          <div className="mb-6">
+          <div className="mb-6" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             <h3 className="text-lg font-bold mb-3 border-b-2 border-gray-800 pb-2">💡 Quick Negotiation Tips</h3>
             <div className="bg-yellow-100 border-4 border-gray-800 p-4 text-sm space-y-2">
               <p>1. Lead with data and accomplishments</p>
@@ -222,7 +222,7 @@ function PreNegotiationBrief({ playerData, onClose }) {
           </div>
 
           {/* Target Form */}
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
             <div className="mb-6">
               <label className="block mb-2 font-medium">Your Target Salary Goal (USD) *</label>
               <input

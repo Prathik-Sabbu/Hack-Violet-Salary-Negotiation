@@ -19,6 +19,7 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd, s
   const [isLoading, setIsLoading] = useState(false)
   const [showInstructions, setShowInstructions] = useState(skipToEnd || skipIntro ? false : true) // Show instructions first
   const [showBrief, setShowBrief] = useState(false) // Show brief after instructions
+  const [instructionSource, setInstructionSource] = useState('initial') // Track where instructions were opened from
   const [chatInitialized, setChatInitialized] = useState(false) // Track if chat is initialized
   const [isTextAnimating, setIsTextAnimating] = useState(false) // Track if text is typing
   const [fullResponseText, setFullResponseText] = useState('') // Store full text for typewriter
@@ -360,7 +361,12 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd, s
         <InstructionScreen
           onClose={() => {
             setShowInstructions(false)
-            setShowBrief(true)
+            // Only show brief if this was the initial instruction screen
+            if (instructionSource === 'initial') {
+              setShowBrief(true)
+            }
+            // Reset source for next time
+            setInstructionSource('initial')
           }}
         />
       )}
@@ -419,6 +425,21 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings, skipToEnd, s
           title="View Brief"
           aria-label="View Brief"
         />
+      </div>
+
+      {/* Information icon button to show instructions */}
+      <div className="absolute z-30" style={{ bottom: '210px', left: '16px' }}>
+        <button
+          onClick={() => {
+            setInstructionSource('info-button') // Mark that it was opened from info button
+            setShowInstructions(true)
+          }}
+          className="info-btn"
+          title="View Instructions"
+          aria-label="View Instructions"
+        >
+          <span className="info-icon">i</span>
+        </button>
       </div>
 
       {/* Top-left button for new settings */}

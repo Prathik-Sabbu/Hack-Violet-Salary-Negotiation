@@ -50,13 +50,13 @@ function InstructionScreen({ onClose }) {
             <div className="mb-8 mt-12 text-center">
               <h2
                 className="text-3xl font-bold mb-2 text-purple-600"
-                style={{ fontFamily: 'Stardew Valley, monospace' }}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
               >
                 How to Play
               </h2>
               <p
                 className="text-gray-600 text-sm"
-                style={{ fontFamily: 'Stardew Valley, monospace' }}
+                style={{ fontFamily: 'vt323-regular-webfont, monospace' }}
               >
                 Master the art of salary negotiation
               </p>
@@ -64,11 +64,11 @@ function InstructionScreen({ onClose }) {
 
             {/* Game Overview */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+              <h3 className="text-xl font-bold text-blue-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                 🎯 Your Mission
               </h3>
               <div className="bg-white/80 rounded-lg p-4">
-                <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   You’re about to negotiate your salary with Shlok, the hiring manager. As a female employee, you’ll face a fast-moving manager who hides behind “policy,” budgets, and subtle double standards to justify keeping your pay low. Your goal is to secure the wage you deserve through strategic conversation, data-driven arguments, and professional communication. Know your worth!
                 </p>
               </div>
@@ -79,15 +79,15 @@ function InstructionScreen({ onClose }) {
 
             {/* How It Works */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-green-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+              <h3 className="text-xl font-bold text-green-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                 📋 How It Works
               </h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <span className="text-green-600 font-bold text-xl mt-1">1.</span>
                   <div>
-                    <p className="font-bold text-gray-900" style={{ fontFamily: 'Stardew Valley, monospace' }}>Review Your Brief</p>
-                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    <p className="font-bold text-gray-900" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Review Your Brief</p>
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                       You'll see your current salary, market average, target range, and achievements. Use this information strategically!
                     </p>
                   </div>
@@ -96,8 +96,8 @@ function InstructionScreen({ onClose }) {
                 <div className="flex items-start gap-3">
                   <span className="text-green-600 font-bold text-xl mt-1">2.</span>
                   <div>
-                    <p className="font-bold text-gray-900" style={{ fontFamily: 'Stardew Valley, monospace' }}>Talk to Shlok</p>
-                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    <p className="font-bold text-gray-900" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Talk to Shlok</p>
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                       Type your responses in the text box at the bottom. Shlok will respond based on your communication style and strategy.
                     </p>
                   </div>
@@ -106,8 +106,8 @@ function InstructionScreen({ onClose }) {
                 <div className="flex items-start gap-3">
                   <span className="text-green-600 font-bold text-xl mt-1">3.</span>
                   <div>
-                    <p className="font-bold text-gray-900" style={{ fontFamily: 'Stardew Valley, monospace' }}>Watch the Offers</p>
-                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    <p className="font-bold text-gray-900" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Watch the Offers</p>
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                       The current offer displays at the top. Track your progress as you negotiate toward your target!
                     </p>
                   </div>
@@ -116,8 +116,8 @@ function InstructionScreen({ onClose }) {
                 <div className="flex items-start gap-3">
                   <span className="text-green-600 font-bold text-xl mt-1">4.</span>
                   <div>
-                    <p className="font-bold text-gray-900" style={{ fontFamily: 'Stardew Valley, monospace' }}>Reach Your Goal</p>
-                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                    <p className="font-bold text-gray-900" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>Reach Your Goal</p>
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                       The negotiation ends when you reach your target, accept an offer, or the conversation ends. You'll receive feedback on your performance!
                     </p>
                   </div>
@@ -130,26 +130,26 @@ function InstructionScreen({ onClose }) {
 
             {/* Pro Tips */}
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-purple-700 mb-4" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+              <h3 className="text-xl font-bold text-purple-700 mb-4" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                 💡 Pro Tips
               </h3>
               <div className="bg-purple-50 rounded-lg p-4 space-y-2">
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Use data:</strong> Reference market rates and your achievements
                 </p>
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Stay professional:</strong> Be confident but respectful
                 </p>
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Be specific:</strong> Vague requests lead to vague responses
                 </p>
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Don't rush:</strong> Take time to craft thoughtful responses
                 </p>
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Reopen brief:</strong> Click the 📋 Brief button anytime to review your information
                 </p>
-                <p className="text-gray-800 text-sm" style={{ fontFamily: 'Stardew Valley, monospace' }}>
+                <p className="text-gray-800 text-sm" style={{ fontFamily: 'vt323-regular-webfont, monospace' }}>
                   • <strong>Browser zoom:</strong> Use <kbd style={{ padding: '2px 6px', border: '1px solid #ccc', borderRadius: '3px', backgroundColor: '#f7f7f7', fontFamily: 'monospace', fontSize: '0.85em', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>Ctrl</kbd> + <kbd style={{ padding: '2px 6px', border: '1px solid #ccc', borderRadius: '3px', backgroundColor: '#f7f7f7', fontFamily: 'monospace', fontSize: '0.85em', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>+</kbd>/<kbd style={{ padding: '2px 6px', border: '1px solid #ccc', borderRadius: '3px', backgroundColor: '#f7f7f7', fontFamily: 'monospace', fontSize: '0.85em', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>−</kbd> to adjust text size
                 </p>
               </div>
