@@ -40,15 +40,15 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
       const response = await sendChatMessage(playerInput)
 
       // Update metadata state
-      if (response.metadata) {
-        if (response.metadata.current_offer !== undefined) {
-          setCurrentOffer(response.metadata.current_offer)
+      if (response.state) {
+        if (response.state.current_offer !== undefined) {
+          setCurrentOffer(response.state.current_offer)
         }
-        if (response.metadata.status) {
-          setNegotiationStatus(response.metadata.status)
+        if (response.state.status) {
+          setNegotiationStatus(response.state.status)
         }
-        if (response.metadata.hint) {
-          setHint(response.metadata.hint)
+        if (response.state.hint) {
+          setHint(response.state.hint)
         } else {
           setHint('')
         }
@@ -57,14 +57,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
       setIsLoading(false)
       return {
         text: response.text,
-        metadata: response.metadata
+        state: response.state
       }
     } catch (error) {
       console.error('Error getting AI response:', error)
       setIsLoading(false)
       return {
         text: "I'm having trouble processing that. Let's continue - what were you saying?",
-        metadata: null
+        state: null
       }
     }
   }
@@ -130,14 +130,14 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
     ])
 
     // Check for terminal status or max rounds
-    const status = shlokResponse.metadata?.status
+    const status = shlokResponse.state?.status
     if (TERMINAL_STATUSES.includes(status) || currentRound >= MAX_ROUNDS - 1) {
       console.log('Negotiation complete!', { status, currentOffer })
       setGameState('complete')
       onComplete?.({
         dialogue,
         finalRound: currentRound,
-        finalOffer: shlokResponse.metadata?.current_offer || currentOffer,
+        finalOffer: shlokResponse.state?.current_offer || currentOffer,
         status: status || 'max_rounds'
       })
       return
