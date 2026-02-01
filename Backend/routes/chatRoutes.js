@@ -30,19 +30,15 @@ router.post('/message', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD:Backend/routes/chatRoutes.js
-=======
-router.get('/intialize', async (req, res) => {
-    try{
-        initializeChat();
-        console.log('chat initialized')
-        res.status(200)
+router.get('/initialize', async (req, res) => {
+    try {
+        await initializeChat();
+        console.log('Chat initialized');
+        res.status(200).json({ success: true, message: 'Chat initialized successfully' });
+    } catch (error) {
+        console.error('Error in /api/chat/initialize:', error);
+        res.status(500).json({ error: error.message });
     }
-    catch{
-        console.error('Error in /api/chat/intialize:', error);
-        res.status(400).json({ error: error.message });
-    }
-})
+});
 
->>>>>>> 495c20067d8a784f900ef8da573cf920f24e69fd:Backend/routes/chat_messege.js
 export default router;

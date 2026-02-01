@@ -4,11 +4,7 @@ import ShlokText from './ShlokText'
 import PreNegotiationBrief from './NegotiationBrief'
 import './NegotiationScreen.css'
 import StaminaBar from './StaminaBar'
-<<<<<<< HEAD
-import { sendChatMessage, initializeChat } from '../services/apiClient'
-=======
-import { initializeChat, sendChatMessage } from '../services/api'
->>>>>>> 495c20067d8a784f900ef8da573cf920f24e69fd
+import { initializeChat, sendChatMessage } from '../services/apiClient'
 
 function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
   // Game states: 'shlok_speaking' → 'player_typing' → loop → 'complete'
@@ -258,36 +254,12 @@ function NegotiationScreen({ playerData, onComplete, onNewSettings }) {
             </div>
           </div>
 
-<<<<<<< HEAD
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={async () => {
-                try {
-                  await initializeChat()
-                } catch (error) {
-                  console.error('Failed to reset chat:', error)
-                }
-                window.location.reload()
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
-            >
-              Play Again
-            </button>
-            <button
-              onClick={() => onNewSettings?.()}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg"
-            >
-              New Settings
-            </button>
-          </div>
-=======
           <button
             onClick={handlePlayAgain}
             className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg"
           >
             Play Again
           </button>
->>>>>>> 495c20067d8a784f900ef8da573cf920f24e69fd
         </div>
       </div>
     )
